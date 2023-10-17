@@ -1,2 +1,2 @@
-# rat-sense
-Rat sensor description
+# Open Whisker Project
+mainly just checking the branching
