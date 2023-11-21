@@ -1,0 +1,3 @@
+[submodule "calibrator/visual_calibrator/pi-h264-to-browser"]
+	path = calibrator/visual_calibrator/pi-h264-to-browser
+	url = https://github.com/dans98/pi-h264-to-browser
