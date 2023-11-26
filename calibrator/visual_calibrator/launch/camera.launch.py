@@ -15,11 +15,12 @@ def generate_launch_description():
         output = "screen",
         parameters = [
             os.path.join(MASTER_CONFIG_DIR, "camera_params-yuv.yaml"),
+            {"camera_info_url": "file://" + str(os.path.realpath(os.path.join(MASTER_CONFIG_DIR, "camera_info.yml")))},
         ],
     )
 
     return LaunchDescription([
-        camera
+        camera,
     ])
 
 def main(argv):

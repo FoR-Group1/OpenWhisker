@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "visual_calibrator = visual_calibrator.v_calibrator:main"
         ],
     },
 )
