@@ -1,4 +1,15 @@
-FROM nvcr.io/nvidia/l4t-pytorch:r32.4.3-pth1.6-py3
+FROM nvcr.io/nvidia/pytorch:23.10-py3
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+RUN pip3 install --upgrade pip setuptools wheel && \
+    pip3 install --upgrade pip && \ 
+    pip3 install \
+        ipykernel \
+        ipython \
+        ipython-genutils \
+        jupyter-client \
+        jupyter-core \
+        matplotlib \
+        numpy \
+        opencv-python==4.8.0.74 \
+        Pillow \
+        torch
