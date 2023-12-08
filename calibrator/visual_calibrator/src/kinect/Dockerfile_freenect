@@ -1,0 +1,9 @@
+WORKDIR /kinect
+RUN git clone -b debian https://github.com/OpenKinect/libfreenect
+RUN mkdir /kinect/libfreenect/build 
+WORKDIR /kinect/libfreenect/build 
+RUN cmake .. -DBUILD_REDIST_PACKAGE=OFF
+RUN make
+RUN make install
+
+WORKDIR /kinect

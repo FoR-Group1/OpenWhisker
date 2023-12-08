@@ -1,0 +1,18 @@
+FROM ros:humble-ros-base-jammy
+MAINTAINER Eden Attenborough "28238148@students.lincoln.ac.uk"
+ENV TZ=Europe/London
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update -y
+RUN apt-get install -y cmake git gcc wget neofetch libusb-1.0-0-dev ros-humble-demo-nodes-cpp iputils-ping tmux libgl1-mesa-dev libegl1-mesa-dev libglew-dev freeglut3-dev libxmu-dev libxi-dev mesa-utils
+
+
+COPY scripts/ /scripts
+
+WORKDIR /kinect
+RUN wget -O opencv.tar.gz https://sourceforge.net/projects/opencvlibrary/files/3.4.15/opencv-3.4.15.tar.gz/download
+RUN tar xvf opencv.tar.gz && rm opencv.tar.gz
+RUN mkdir /kinect/opencv-3.4.15/build 
+WORKDIR /kinect/opencv-3.4.15/build/
+RUN cmake ..
+RUN make
+RUN make install
