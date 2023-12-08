@@ -1,3 +1,5 @@
+FROM jwansek/opencv
+
 WORKDIR /kinect
 RUN git clone -b debian https://github.com/OpenKinect/libfreenect
 RUN mkdir /kinect/libfreenect/build 
