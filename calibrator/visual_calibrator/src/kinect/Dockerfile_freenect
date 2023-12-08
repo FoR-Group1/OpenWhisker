@@ -1,11 +1,20 @@
-FROM jwansek/opencv
+FROM reg.reaweb.uk/roscv
 
 WORKDIR /kinect
 RUN git clone -b debian https://github.com/OpenKinect/libfreenect
 RUN mkdir /kinect/libfreenect/build 
 WORKDIR /kinect/libfreenect/build 
-RUN cmake .. -DBUILD_REDIST_PACKAGE=OFF
+RUN cmake .. -DBUILD_PYTHON3=ON
 RUN make
 RUN make install
+
+WORKDIR /kinect
+RUN mkdir /kinect/ws
+RUN mkdir /kinect/ws/src
+WORKDIR /kinect/ws/src
+RUN git clone https://github.com/fadlio/kinect_ros2
+WORKDIR /kinect/ws/
+RUN rosdep install --from-paths src --ignore-src -r -y
+RUN colcon build
 
 WORKDIR /kinect

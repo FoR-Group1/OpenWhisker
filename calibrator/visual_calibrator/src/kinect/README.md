@@ -14,4 +14,12 @@ Make sure the kinect is working and it can be passed through to docker:
 It is spread across multiple images, yes this wastes disk space but OpenCV takes like 3 hours to compile so it takes ages to troubleshoot
 otherwise. To build:
 
- - `docker build . -t jwansek/opencv -f=Dockerfile_opencv`
+ - `docker build . -t reg.reaweb.uk/roscv -f=Dockerfile_opencv`
+ - `docker build . -t reg.reaweb.uk/rosnect -f=Dockerfile_freenect`
+
+## Using the registry
+
+I have set up a docker registry so you don't have to compile it yourself:
+
+ - `docker login reg.reaweb.uk` (Message Eden if you need a username/password)
+ - `docker pull reg.reaweb.uk/roscv`
