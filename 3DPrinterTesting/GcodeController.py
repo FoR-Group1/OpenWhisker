@@ -132,7 +132,7 @@ class GcodeController:
         if value < min or value > max:
             raise ValueError(f"Make sure {label} is between {min} and {max}")
 
-        def send_gcode(self, gcode) -> None:
+    def send_gcode(self, gcode) -> None:
         """
         writes gcode to the printer
         """
