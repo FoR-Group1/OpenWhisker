@@ -154,15 +154,12 @@ class GcodeController:
         self.set_speed(self.printer_speed)
 
     def set_speed(self, speed) -> None:
-        if speed < self.MIN_SPEED or speed > self.MAX_SPEED:
-            raise ValueError(
-                f"Set a speed between {self.MIN_SPEED} and {self.MAX_SPEED}"
-            )
+        f_gcode = self.gcode(speed)
         self.printer_speed = speed
-        self.send_gcode(f"G1 F{self.printer_speed}:")
+        self.send_gcode(f_gcode)
 
     def beam_test_prepare(self) -> None:
-        self.send_gcode("G1 X100 Y100:")
+        self.send_gcode(self.gcode(x=100, y=100)
 
     def beam_test(self) -> None:
         self.beam_test_prepare()
