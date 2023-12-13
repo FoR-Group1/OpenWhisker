@@ -4,6 +4,8 @@ import threading
 from time import sleep, time
 import csv
 import re
+import os
+import queue
 
 
 class GcodeController:
@@ -22,10 +24,16 @@ class GcodeController:
     POS_DATA_REGEX = re.compile(r"\bX\b | \bY\b | \bZ\b | \bCount\b", flags=re.I | re.X)
     POS_MATCH = ["X", "Y", "Z", "Count", "X", "Y", "Z"]
 
-    BEAM_START: Final[float] = -5.0  # relative to the nozzle x position
-    BEAM_THICKNESS: Final[float] = 35.0
+    BEAM_START: Final[float] = -13.20  # relative to the nozzle x position
+    BEAM_THICKNESS: Final[float] = 16.20
+    BEAM_END: Final[float] = BEAM_START + BEAM_THICKNESS
 
-    WHISKER_X: Final[float] = 130.0  # set the x distance of the whisker
+    WHISKER_X: Final[float] = 150.0  # set the x distance of the whisker
+    WHISKER_TIP_Y: Final[float] = 40
+    WHISKER_LENGTH_Y: Final[float] = 150
+
+    LOG_FOLDER: Final[str] = os.path.dirname(os.path.abspath(__file__)) + "/log/"
+    LOG_FILE: str = LOG_FOLDER + "log.csv"
 
     def __init__(self, port=PORT):
         print("-- initiating 3D Printer connection --")
@@ -36,42 +44,87 @@ class GcodeController:
         self.x: float = 0
         self.y: float = 0
         self.z: float = 0
+
+        self.prev_x: float = 0
+        self.prev_y: float = 0
+        self.prev_z: float = 0
+
         self.goal_x: float = 0
         self.goal_y: float = 0
         self.goal_z: float = 0
+
         self.printer_speed: float = 2000
 
         # initialising the printer status
         self.printer_status = ""
+        self.checked_heading = False
+        self.current_gcode = ""
+
+        # initialise pritner configurations
+        self.send_gcode("G21:")
+
+        self.gcode_g1_queue = queue.Queue()
 
         # begins threads to get and log positional data of the nozzle
-        threading.Thread(target=self.read_and_store_serial).start()
-        threading.Thread(target=self.get_position_loop).start()
+        self.store_data_thread = threading.Thread(
+            target=self.read_and_store_serial
+        ).start()
+        self.position_thread = threading.Thread(target=self.get_position_loop).start()
+        self.process_gcode_queue_thread = threading.Thread(
+            target=self.process_gcode_g1_queue
+        )
 
     def read_and_store_serial(self):
-        while True:
-            if self.serial.in_waiting:
-                with open("3dPrinterData.csv", mode="a") as csvfile:
-                    fieldnames = ["timestamp", "gcode"]
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    data = self.gcode_parser()
-                    if data:
-                        writer.writerow(
-                            {
-                                "timestamp": time(),
-                                "gcode": data,
-                            }
-                        )
-    
+        fieldnames = [
+            "timestamp",
+            "x",
+            "y",
+            "z",
+            "f",
+            "goal_x",
+            "goal_y",
+            "goal_z",
+        ]
+
+        if not os.path.isfile(self.LOG_FILE) or os.path.getsize(self.LOG_FILE) == 0:
+            # File does not exist or is empty, so write the header
+            with open(self.LOG_FILE, mode="w", newline="") as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+
+        with open(self.LOG_FILE, mode="r") as csvfile:
+            if not csv.Sniffer().has_header(csvfile.read(1024)):
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+
+            while True:
+                if self.serial.in_waiting:
+                    with open(self.LOG_FILE, mode="a") as csvfile:
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                        writeable_data = self.gcode_parser()
+                        if writeable_data:
+                            writer.writerow(
+                                {
+                                    "timestamp": int(time() * 1000),
+                                    "x": self.x,
+                                    "y": self.y,
+                                    "z": self.z,
+                                    "f": self.printer_speed,
+                                    "goal_x": self.goal_x,
+                                    "goal_y": self.goal_y,
+                                    "goal_z": self.goal_z,
+                                }
+                            )
+
     def get_position_loop(self) -> None:
         """
         Returns the current position of the print head
         """
         while True:
             if self.gcode_is_available:
-                sleep(1 / self.READING_FREQUENCY)
+                # if i want to sleep then use a timer callback
+                sleep(1 / self.READING_FREQUENCY)  # freq is set by the printer
                 self.serial.write("M114:".encode())
-
 
     def gcode_parser(self):
         """
@@ -102,22 +155,32 @@ class GcodeController:
             for coord in current_coords.strip().replace(": ", ":").split(" "):
                 axis, position = coord.split(":")
                 if axis == "X":
+                    self.prev_x = self.x
                     self.x = float(position)
                 if axis == "Y":
+                    self.prev_y = self.y
                     self.y = float(position)
                 if axis == "Z":
+                    self.prev_z = self.z
                     self.z = float(position)
 
         return self.printer_status
 
-       def gcode(self, x=None, y=None, z=None, f=None) -> str:
+    @property
+    def at_goal(self) -> bool:
+        x_at_goal = self.x == self.prev_x
+        y_at_goal = self.y == self.prev_y
+        z_at_goal = self.z == self.prev_z
+        return x_at_goal and y_at_goal and z_at_goal
+
+    def gcode(self, x=None, y=None, z=None, f=None) -> str:
         """
         Method to prepare the gcode with some validation checks
         """
         x = self.x if x is None else x
         y = self.y if y is None else y
         z = self.z if z is None else z
-        f = self.x if y is None else y
+        f = self.printer_speed if f is None else f
 
         self.raise_between_error("X", x, self.MIN_X, self.MAX_X)
         self.raise_between_error("Y", y, self.MIN_Y, self.MAX_Y)
@@ -125,18 +188,38 @@ class GcodeController:
 
         return f"G1 X{x} Y{y} Z{z} F{f}"
 
+    # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
+    #     return f"G1 X{x} Y{y} Z{z} F{f}"
+
     def raise_between_error(self, label, value, min, max):
         """
         validation check to make sure the the gcode is safe to output
         """
-        if value < min or value > max:
+        if value <= min or value >= max:
             raise ValueError(f"Make sure {label} is between {min} and {max}")
 
-    def send_gcode(self, gcode) -> None:
+    def send_gcode(self, gcode, bypass=False) -> None:
         """
         writes gcode to the printer
         """
-        self.serial.write(gcode.encode())
+        while True:
+            # if movement, make sure last goal is reached first
+            print("here")
+            if "G1" in gcode and not self.at_goal and not bypass:
+                self.gcode_g1_queue.put(gcode)
+                if not self.process_gcode_queue_thread.is_alive():
+                    self.process_gcode_queue_thread.start()
+                break
+            if self.gcode_is_available:
+                self.serial.write(gcode.encode())
+                break
+
+    def process_gcode_g1_queue(self):
+        while self.gcode_g1_queue.qsize() > 0:
+            if self.at_goal:
+                self.send_gcode(self.gcode_g1_queue.get(), True)
+
+        # terminate queue
 
     def set_prepare_position(self, *Y_POS: float) -> None:
         """
@@ -154,18 +237,80 @@ class GcodeController:
         self.set_speed(self.printer_speed)
 
     def set_speed(self, speed) -> None:
-        f_gcode = self.gcode(speed)
+        f_gcode = f"G1 F{speed}:"
         self.printer_speed = speed
         self.send_gcode(f_gcode)
 
     def beam_test_prepare(self) -> None:
-        self.send_gcode(self.gcode(x=100, y=100)
+        self.send_gcode(self.gcode(x=self.get_prepare_position_x, y=100))
 
-    def beam_test(self) -> None:
+    def send_wait(self, m_sec) -> None:
+        """this sucks, don't use it"""
+        self.send_gcode(f"G4 P{m_sec}:")
+        sleep(m_sec / 1000)
+
+    def send_message(self, message) -> None:
+        self.send_gcode(f"M117 {message}:")
+
+    # def std_out_data_gcode(self, gcode):
+
+    def increments_beam_test(
+        self,
+        total_x_distance: float = 10,
+        total_y_distance: float = 10,
+        increments_x: int = 5,
+        increments_y: int = 0,
+        pause_sec: int = 5,
+    ) -> None:
+        # -- prepare printer position for the test --
+        controller = self
+        inc_dist_x = total_x_distance / increments_x
+        inc_dist_y = total_y_distance / increments_y
+        starting_y_pos = 100  # TODO: figure out a standard constant for this value
+        deflect_x_distance = inc_dist_x
+        deflect_y_pos = starting_y_pos
+
+        controller.send_message("Preparing for increment test")
+        controller.beam_test_prepare()
+        sleep(5)
+        controller.send_message("Begin increment test")
+
+        for _ in range(increments_y + 1):
+            controller.send_gcode(controller.gcode(x=self.WHISKER_X))
+            while not self.at_goal:
+                sleep(1)
+            controller.send_gcode(controller.gcode(y=starting_y_pos))
+            controller.send_gcode(controller.gcode(x=self.WHISKER_X))
+            for _ in range(increments_x + 1):
+                controller.send_gcode(
+                    controller.gcode(x=self.WHISKER_X + deflect_x_distance)
+                )
+                sleep(pause_sec)
+                while not self.at_goal:
+                    sleep(1)
+                deflect_x_distance += inc_dist_x
+
+            deflect_y_pos += starting_y_pos
+
+        controller.send_message("Returning to start")
+        controller.beam_test_prepare()
+        controller.send_message("Increment test complete")
+        sleep(5)
+
+        controller.send_message("yo yo, what next?")
+
+        # self.send_wait(pause_sec)
+        # set bending location
+        # read
+
+    def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
         self.beam_test_prepare()
-        self.send_gcode(
-            "G1 X115: G1 X90: G1 X115: G1 X90:G1 X115: G1 X90:G1 X115: G1 X90:G1 X115: G1 X90:"
-        )
+        gcode_prepare = self.gcode(x=self.get_prepare_position_x, y=y_distance)
+        gcode_bend = self.gcode(x=x_deflection, y=y_distance)
+        gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
+        for _ in range(count):
+            gcode += gcode
+        self.send_gcode(gcode)
 
     @property
     def gcode_is_available(self) -> bool:
@@ -183,10 +328,10 @@ class GcodeController:
         ]:
             return False
         return True
-    
+
     @property
     def printer_status_is_position_data(self) -> bool:
-        ''' Uses Regex to determine if the current status is Positional data'''
+        """Uses Regex to determine if the current status is Positional data"""
         return self.POS_DATA_REGEX.findall(self.printer_status) == self.POS_MATCH
 
     @property
@@ -217,3 +362,11 @@ if __name__ == "__main__":
     gcode.send_gcode("G1 Y110 X100:")
 
     print("complete")
+
+
+status = [
+    "timestamp",
+    "distance_on_shaft",
+    "displacement from center",
+    "do I think i'm touching whisker",
+]
