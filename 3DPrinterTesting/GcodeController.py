@@ -334,6 +334,8 @@ class GcodeController:
                 sleep(pause_sec)
                 while not self.at_goal:
                     sleep(1)
+                deflect_x_distance += inc_dist_x
+
 
             sdt_out_data = {}
             sdt_out_data["timestamp"] = time()
@@ -341,7 +343,6 @@ class GcodeController:
             sdt_out_data["bend_distance"] = deflect_x_distance
             print_to_stdout(f"Maximum deflection:{sdt_out_data}")
 
-            deflect_x_distance += inc_dist_x
             deflect_y_pos += inc_dist_y
             controller.send_gcode(controller.gcode(x=self.WHISKER_X - x_spacing))
             while not self.at_goal:
