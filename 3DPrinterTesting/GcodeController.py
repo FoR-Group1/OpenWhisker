@@ -307,7 +307,11 @@ class GcodeController:
 
         deflect_y_pos = starting_y_pos
         for _ in range(increments_y + 1):
-            controller.send_gcode(controller.gcode(x=self.get_prepare_position_x - 10))
+            x_spacing = 10
+            y_spacing = 10
+            controller.send_gcode(
+                controller.gcode(x=self.get_prepare_position_x - x_spacing)
+            )
             while not self.at_goal:
                 sleep(1)
             controller.send_gcode(controller.gcode(y=deflect_y_pos))
@@ -333,26 +337,20 @@ class GcodeController:
                 deflect_x_distance += inc_dist_x
 
             deflect_y_pos += inc_dist_y
-            controller.send_gcode(controller.gcode(x=self.WHISKER_X - 10.0))
+            controller.send_gcode(controller.gcode(x=self.WHISKER_X - x_spacing))
             while not self.at_goal:
                 sleep(1)
             controller.send_gcode(
-                controller.gcode(x=self.WHISKER_X - 5.0, y=deflect_y_pos)
+                controller.gcode(x=self.WHISKER_X - x_spacing, y=deflect_y_pos)
             )
             while not self.at_goal:
                 sleep(1)
             sleep(3)
         controller.send_message("Returning to start")
         controller.beam_test_prepare()
-
         controller.send_message("Increment test complete")
         sleep(5)
-
         controller.send_message("yo yo, what next?")
-
-        # self.send_wait(pause_sec)
-        # set bending location
-        # read
 
     def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
         self.beam_test_prepare()
