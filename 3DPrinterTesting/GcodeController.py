@@ -25,7 +25,7 @@ class GcodeController:
     POS_DATA_REGEX = re.compile(r"\bX\b | \bY\b | \bZ\b | \bCount\b", flags=re.I | re.X)
     POS_MATCH = ["X", "Y", "Z", "Count", "X", "Y", "Z"]
 
-    BEAM_START: Final[float] = -14.20  # relative to the nozzle x position
+    BEAM_START: Final[float] = -13.20  # relative to the nozzle x position
     BEAM_THICKNESS: Final[float] = 16.20
     BEAM_END: Final[float] = BEAM_START + BEAM_THICKNESS
 
@@ -263,7 +263,12 @@ class GcodeController:
         self.send_gcode(f_gcode)
 
     def beam_test_prepare(self) -> None:
-        self.send_gcode(self.gcode(x=self.get_prepare_position_x - 5, y=100))
+        self.send_gcode(
+            self.gcode(
+                x=self.get_prepare_position_x - 5,
+                y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
+            )
+        )
 
     def send_wait(self, m_sec) -> None:
         """this sucks, don't use it"""
@@ -291,8 +296,8 @@ class GcodeController:
         controller = self
         inc_dist_x = total_x_distance / increments_x
         inc_dist_y = total_y_distance / increments_y
-        starting_y_pos = self.WHISKER_TIP_Y + 5
-        deflect_x_distance = inc_dist_x
+        starting_y_pos = self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + self.WHISKER_TIP_Y + 5
+        deflect_x_distance = 0
 
         controller.send_message("Preparing for increment test")
         controller.beam_test_prepare()
@@ -302,10 +307,10 @@ class GcodeController:
 
         deflect_y_pos = starting_y_pos
         for _ in range(increments_y + 1):
-            controller.send_gcode(controller.gcode(x=self.get_prepare_position_x))
+            controller.send_gcode(controller.gcode(x=self.get_prepare_position_x - 10))
             while not self.at_goal:
                 sleep(1)
-            controller.send_gcode(controller.gcode(x=self.WHISKER_X, y=deflect_y_pos))
+            controller.send_gcode(controller.gcode(y=deflect_y_pos))
             while not self.at_goal:
                 sleep(1)
 
@@ -328,6 +333,9 @@ class GcodeController:
                 deflect_x_distance += inc_dist_x
 
             deflect_y_pos += inc_dist_y
+            controller.send_gcode(controller.gcode(x=self.WHISKER_X - 10.0))
+            while not self.at_goal:
+                sleep(1)
             controller.send_gcode(
                 controller.gcode(x=self.WHISKER_X - 5.0, y=deflect_y_pos)
             )
