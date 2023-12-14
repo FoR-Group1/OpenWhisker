@@ -288,14 +288,18 @@ class GcodeController:
         self,
         total_x_distance: float = 10,
         total_y_distance: float = 10,
-        increments_x: int = 5,
-        increments_y: int = 0,
-        pause_sec: int = 5,
+        increments_x: int = 1,
+        increments_y: int = 1,
+        pause_sec: int = 3,
     ) -> None:
         # -- prepare printer position for the test --
         controller = self
-        inc_dist_x = total_x_distance / increments_x
-        inc_dist_y = total_y_distance / increments_y
+        inc_dist_x = (
+            total_x_distance if increments_x == 0 else total_x_distance / increments_x
+        )
+        inc_dist_y = (
+            total_y_distance if increments_y == 0 else total_y_distance / increments_y
+        )
         starting_y_pos = self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + self.WHISKER_TIP_Y + 5
         deflect_x_distance = 0
 
@@ -335,7 +339,6 @@ class GcodeController:
                 while not self.at_goal:
                     sleep(1)
                 deflect_x_distance += inc_dist_x
-
 
             sdt_out_data = {}
             sdt_out_data["timestamp"] = time()
