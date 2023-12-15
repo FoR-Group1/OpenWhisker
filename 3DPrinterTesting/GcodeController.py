@@ -41,7 +41,7 @@ class GcodeController:
         print("-- initiating 3D Printer connection --")
         self.port: str = port
         self.serial: serial.Serial = serial.Serial(self.port, 115200)
-        self.has_been_calibrated = False
+        self.calibrated = False
 
         # initialising printer position variables
         self.x: float = 0
@@ -76,7 +76,6 @@ class GcodeController:
         self.current_gcode = ""
 
         # initialise pritner configurations
-        self.send_gcode("G21:")  # setting printer to mm measurements
         self.initialise_log_file()  # create log file if empty
         # begin collection position information
         self.position_thread = threading.Thread(target=self.get_position_loop).start()
@@ -255,10 +254,9 @@ class GcodeController:
         """
         writes gcode to the printer
         """
-        if not self.calibrated:
-            
-            print_to_stdout('Please Calibrate/Prepare the Printer First')
-            gcode = 'M117 Please run prepare()'
+        if not self.calibrated and gcode != "M114:":
+            print_to_stdout("Please Calibrate/Prepare the Printer First")
+            gcode = "M117 Please run prepare():"
 
         self.previous_gcode = self.current_gcode
         self.current_gcode = gcode.encode()
@@ -295,6 +293,7 @@ class GcodeController:
         Calibrates X and Y axis on the 3D Printer
         """
         self.calibrated = True
+        self.send_gcode("G21:")
         self.send_gcode("G28 XY:")
         self.set_speed(self.printer_speed)
 
