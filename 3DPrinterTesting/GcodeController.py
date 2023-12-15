@@ -164,15 +164,6 @@ class GcodeController:
         sleep(5)
         controller.send_message("yo yo, what next?")
 
-    def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
-        self.beam_test_prepare()
-        gcode_prepare = self.gcode(x=self.beam_from_whisker_tip_x, y=y_distance)
-        gcode_bend = self.gcode(x=x_deflection, y=y_distance)
-        gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
-        for _ in range(count):
-            gcode += gcode
-        self.send_gcode(gcode)
-
     #########################################
     ############## UTILITY ##################
     #########################################
@@ -254,10 +245,6 @@ class GcodeController:
         """
         writes gcode to the printer
         """
-        if not self.calibrated and gcode != "M114:":
-            print_to_stdout("Please Calibrate/Prepare the Printer First")
-            gcode = "M117 Please run prepare():"
-
         self.previous_gcode = self.current_gcode
         self.current_gcode = gcode.encode()
 
@@ -275,6 +262,10 @@ class GcodeController:
         self.send_gcode(set_speed_gcode)
 
     def send_movement(self, x=None, y=None, z=None, f=None):
+        if not self.calibrated:
+            print_to_stdout("Please Calibrate/Prepare the Printer First")
+            self.send_message("Please run prepare()")
+
         gcode = self.gcode(x, y, z, f)
         while not self.at_goal:
             sleep(1)
