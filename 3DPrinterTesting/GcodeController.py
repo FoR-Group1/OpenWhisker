@@ -44,6 +44,7 @@ class GcodeController:
         print("-- initiating 3D Printer connection --")
         self.port: str = port
         self.serial: serial.Serial = serial.Serial(self.port, 115200)
+        self.calibrated = False
 
         # initialising printer position variables
         self.x: float = 0
@@ -78,7 +79,6 @@ class GcodeController:
         self.current_gcode = ""
 
         # initialise pritner configurations
-        self.send_gcode("G21:")  # setting printer to mm measurements
         self.initialise_log_file()  # create log file if empty
         # begin collection position information
         self.position_thread = threading.Thread(target=self.get_position_loop).start()
@@ -164,15 +164,6 @@ class GcodeController:
         controller.send_message("Increment test complete")
         sleep(5)
         controller.send_message("yo yo, what next?")
-
-    def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
-        self.beam_test_prepare()
-        gcode_prepare = self.gcode(x=self.beam_from_whisker_tip_x, y=y_distance)
-        gcode_bend = self.gcode(x=x_deflection, y=y_distance)
-        gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
-        for _ in range(count):
-            gcode += gcode
-        self.send_gcode(gcode)
 
     #########################################
     ############## UTILITY ##################
@@ -272,6 +263,10 @@ class GcodeController:
         self.send_gcode(set_speed_gcode)
 
     def send_movement(self, x=None, y=None, z=None, f=None):
+        if not self.calibrated:
+            print_to_stdout("Please Calibrate/Prepare the Printer First")
+            self.send_message("Please run prepare()")
+
         gcode = self.gcode(x, y, z, f)
         while not self.at_goal:
             sleep(1)
@@ -289,9 +284,10 @@ class GcodeController:
         """
         Calibrates X and Y axis on the 3D Printer
         """
-        self.send_gcode("G21:")  # setting the printer to mm
-        self.send_gcode("G28 XY:")  # homing X and Y of the printer
+        self.send_gcode("G21:") # setting the printer to mm
+        self.send_gcode("G28 XY:") # homing X and Y of the printer
         self.set_speed(self.printer_speed)
+        self.calibrated = True
 
     # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
     #     ''' TODO: in progress'''
