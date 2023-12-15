@@ -78,17 +78,7 @@ class GcodeController:
         self.send_gcode("G21:")
 
         self.initialise_log_file()
-
-        self.gcode_g1_queue = queue.Queue()
-
-        # begins threads to get and log positional data of the nozzle
-        # self.store_data_thread = threading.Thread(
-        #     target=self.read_and_store_serial
-        # ).start()
         self.position_thread = threading.Thread(target=self.get_position_loop).start()
-        # self.process_gcode_queue_thread = threading.Thread(
-        #     target=self.process_gcode_g1_queue
-        # )
 
     def initialise_log_file(self):
         if not os.path.isfile(self.LOG_FILE) or os.path.getsize(self.LOG_FILE) == 0:
@@ -99,39 +89,22 @@ class GcodeController:
                 writer.writeheader()
 
     def read_and_store_serial(self):
-        # print("in read and store")
         while self.serial.in_waiting:
-            # print("serial in waiting true")
             self.printer_status = self.serial.readline().decode().strip()
             with open(self.LOG_FILE, mode="a") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
                 writeable_data = self.gcode_parser()
-                # print("storing data")
                 if writeable_data:
-                    writer.writerow(
-                        {
-                            "timestamp": int(time() * 1000),
-                            "x": self.x,
-                            "y": self.y,
-                            "z": self.z,
-                            "f": self.printer_speed,
-                            "goal_x": self.goal_x,
-                            "goal_y": self.goal_y,
-                            "goal_z": self.goal_z,
-                        }
-                    )
+                    writer.writerow(self.log_data)
 
     def get_position_loop(self) -> None:
         """
         Returns the current position of the print head
         """
         while True:
-            # print("in true get position loop")
             if self.current_gcode != self.previous_gcode or not self.at_goal:
-                # print("in not at goal position loop")
                 if self.gcode_is_available:
-                    # print("gcode avaialbe in loop")
-                    # if i want to sleep then use a timer callback
+                    # FIXME: if i want to sleep then use a timer callback
                     sleep(1 / self.READING_FREQUENCY)  # freq is set by the printer
                     self.send_gcode("M114:")
                 self.read_and_store_serial()
@@ -174,13 +147,6 @@ class GcodeController:
 
         return self.printer_status
 
-    @property
-    def at_goal(self) -> bool:
-        x_at_goal = self.x == self.prev_x
-        y_at_goal = self.y == self.prev_y
-        z_at_goal = self.z == self.prev_z
-        return x_at_goal and y_at_goal and z_at_goal
-
     def gcode(self, x=None, y=None, z=None, f=None) -> str:
         """
         Method to prepare the gcode with some validation checks
@@ -215,7 +181,7 @@ class GcodeController:
         if value <= min or value >= max:
             raise ValueError(f"Make sure {label} is between {min} and {max}")
 
-    def send_gcode(self, gcode, bypass=False) -> None:
+    def send_gcode(self, gcode) -> None:
         """
         writes gcode to the printer
         """
@@ -223,34 +189,21 @@ class GcodeController:
         self.current_gcode = gcode.encode()
 
         while True:
-            # if movement, make sure last goal is reached first
-            # print("here")
-            # if "G1" in gcode and not self.at_goal and not bypass:
-            #     self.gcode_g1_queue.put(gcode)
-            #     if not self.process_gcode_queue_thread.is_alive():
-            #         self.procesself.printer_status = self.serial.readline().decode().strip()s_gcode_queue_thread.start()
-            #     break
             if self.gcode_is_available:
                 self.serial.write(self.current_gcode)
                 break
 
-    # def process_gcode_g1_queue(self):
-    #     while self.gcode_g1_queue.qsize() > 0:
-    #         if self.at_goal:
-    #             self.send_gcode(self.gcode_g1_queue.get(), True)
-
-    # terminate queue
+    def send_movement(self, x=None, y=None, z=None, f=None):
+        gcode = self.gcode(x, y, z, f)
+        while not self.at_goal:
+            sleep(1)
+        self.send_gcode(gcode)
 
     def set_prepare_position(self, Y_POS=None) -> None:
         """
         Sets the position of beam for testing
         """
-        # gcode = f"G1 X{self.get_prepare_position_x}"
         gcode = self.gcode(x=self.get_prepare_position_x, y=Y_POS)
-        # self.gcode(self.get_prepare_position_x)
-        # if Y_POS is not None:
-        #     gcode += f"Y {Y_POS}"
-        # gcode += ":"
         self.send_gcode(gcode)
 
     def prepare(self) -> None:
@@ -279,11 +232,6 @@ class GcodeController:
         self.send_gcode(f"M117 {message}:")
 
     # def std_out_data_gcode(self, gcode):
-
-    @property
-    def beam_along_whisker(self) -> float:
-        return self.y - self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.WHISKER_TIP_Y
-
     def increments_beam_test(
         self,
         total_x_distance: float = 10,
@@ -316,19 +264,15 @@ class GcodeController:
             controller.send_gcode(
                 controller.gcode(x=self.get_prepare_position_x - x_spacing)
             )
-            while not self.at_goal:
-                sleep(1)
             controller.send_gcode(controller.gcode(y=deflect_y_pos))
-            while not self.at_goal:
-                sleep(1)
 
             deflect_x_distance = inc_dist_x
             for _ in range(increments_x + 1):
-                sdt_out_data = {}
-                sdt_out_data["timestamp"] = time()
-                sdt_out_data["distance_on_shaft"] = self.beam_along_whisker
-                sdt_out_data["bend_distance"] = deflect_x_distance
-                print_to_stdout(sdt_out_data)
+                std_out_data = {}
+                std_out_data["timestamp"] = time()
+                std_out_data["distance_on_shaft"] = self.beam_along_whisker
+                std_out_data["bend_distance"] = deflect_x_distance
+                print_to_stdout(self.data_for_std_out)
 
                 controller.send_gcode(
                     controller.gcode(
@@ -336,25 +280,19 @@ class GcodeController:
                     )
                 )
                 sleep(pause_sec)
-                while not self.at_goal:
-                    sleep(1)
                 deflect_x_distance += inc_dist_x
 
-            sdt_out_data = {}
-            sdt_out_data["timestamp"] = time()
-            sdt_out_data["distance_on_shaft"] = self.beam_along_whisker
-            sdt_out_data["bend_distance"] = deflect_x_distance
-            print_to_stdout(f"Maximum deflection:{sdt_out_data}")
+            std_out_data = {}
+            std_out_data["timestamp"] = time()
+            std_out_data["distance_on_shaft"] = self.beam_along_whisker
+            std_out_data["bend_distance"] = deflect_x_distance
+            print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
 
             deflect_y_pos += inc_dist_y
             controller.send_gcode(controller.gcode(x=self.WHISKER_X - x_spacing))
-            while not self.at_goal:
-                sleep(1)
             controller.send_gcode(
                 controller.gcode(x=self.WHISKER_X - x_spacing, y=deflect_y_pos)
             )
-            while not self.at_goal:
-                sleep(1)
             sleep(3)
         controller.send_message("Returning to start")
         controller.beam_test_prepare()
@@ -370,6 +308,29 @@ class GcodeController:
         for _ in range(count):
             gcode += gcode
         self.send_gcode(gcode)
+
+    #########################################
+    ############# PROPERTIES ################
+    #########################################
+
+    @property
+    def data_for_std_out(self) -> dict:
+        data = {}
+        data["timestamp"] = time()
+        data["distance_on_shaft"] = self.beam_along_whisker
+        data["bend_distance"] = self.x - self.WHISKER_X
+        return data
+
+    @property
+    def beam_along_whisker(self) -> float:
+        return self.y - self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.WHISKER_TIP_Y
+
+    @property
+    def at_goal(self) -> bool:
+        x_at_goal = self.x == self.prev_x
+        y_at_goal = self.y == self.prev_y
+        z_at_goal = self.z == self.prev_z
+        return x_at_goal and y_at_goal and z_at_goal
 
     @property
     def gcode_is_available(self) -> bool:
@@ -410,6 +371,24 @@ class GcodeController:
     @property
     def home_xy(self) -> str:
         return "G28 XY:"
+
+    @property
+    def log_data(self):
+        """
+        TODO: when file is initialised it might be a good idea to validate the headings
+        match the log_data
+        """
+        log_data = {
+            "timestamp": int(time() * 1000),
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+            "f": self.printer_speed,
+            "goal_x": self.goal_x,
+            "goal_y": self.goal_y,
+            "goal_z": self.goal_z,
+        }
+        return log_data
 
 
 def print_to_stdout(*a):
