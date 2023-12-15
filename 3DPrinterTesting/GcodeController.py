@@ -75,9 +75,9 @@ class GcodeController:
         self.current_gcode = ""
 
         # initialise pritner configurations
-        self.send_gcode("G21:")
-
-        self.initialise_log_file()
+        self.send_gcode("G21:")  # setting printer to mm measurements
+        self.initialise_log_file()  # create log file if empty
+        # begin collection position information
         self.position_thread = threading.Thread(target=self.get_position_loop).start()
 
     def initialise_log_file(self):
@@ -108,6 +108,100 @@ class GcodeController:
                     sleep(1 / self.READING_FREQUENCY)  # freq is set by the printer
                     self.send_gcode("M114:")
                 self.read_and_store_serial()
+
+    def beam_test_prepare(self) -> None:
+        self.send_movement(
+            x=self.get_prepare_position_x - 5,
+            y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
+        )
+
+    def increments_beam_test(
+        self,
+        total_x_distance: float = 10,
+        total_y_distance: float = 10,
+        increments_x: int = 1,
+        increments_y: int = 1,
+        pause_sec: int = 3,
+    ) -> None:
+        # -- prepare printer position for the test --
+        controller = self
+        inc_dist_x = (
+            total_x_distance if increments_x == 0 else total_x_distance / increments_x
+        )
+        inc_dist_y = (
+            total_y_distance if increments_y == 0 else total_y_distance / increments_y
+        )
+        starting_y_pos = self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + self.WHISKER_TIP_Y + 5
+        deflect_x_distance = 0
+
+        controller.send_message("Preparing for increment test")
+        controller.beam_test_prepare()
+        sleep(5)
+        controller.send_message("Begin increment test")
+        print_to_stdout("Begin increment test")
+
+        deflect_y_pos = starting_y_pos
+        for _ in range(increments_y + 1):
+            x_spacing = 10  # magic number, this should be set as a class constant maybe
+            # y_spacing = 10
+            self.send_movement(x=self.WHISKER_X - x_spacing)
+            self.send_movement(x=self.WHISKER_X - x_spacing, y=deflect_y_pos)
+            deflect_x_distance = inc_dist_x
+            for _ in range(increments_x + 1):
+                print_to_stdout(self.data_for_std_out)
+
+                self.send_movement(
+                    x=self.WHISKER_X + deflect_x_distance, y=deflect_y_pos
+                )
+                sleep(pause_sec)
+                deflect_x_distance += inc_dist_x
+
+            print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
+
+            deflect_y_pos += inc_dist_y
+            sleep(3)
+        controller.send_message("Returning to start")
+        controller.beam_test_prepare()
+        controller.send_message("Increment test complete")
+        sleep(5)
+        controller.send_message("yo yo, what next?")
+
+    def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
+        self.beam_test_prepare()
+        gcode_prepare = self.gcode(x=self.get_prepare_position_x, y=y_distance)
+        gcode_bend = self.gcode(x=x_deflection, y=y_distance)
+        gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
+        for _ in range(count):
+            gcode += gcode
+        self.send_gcode(gcode)
+
+    #########################################
+    ############## UTILITY ##################
+    #########################################
+
+    def gcode(self, x=None, y=None, z=None, f=None) -> str:
+        """
+        Method to prepare the gcode with some validation checks
+        """
+        gcode = "G1"
+        if x is not None:
+            self.raise_between_error("X", x, self.MIN_X, self.MAX_X)
+            gcode += f" X{x}"
+
+        if y is not None:
+            self.raise_between_error("Y", y, self.MIN_Y, self.MAX_Y)
+            gcode += f" Y{y}"
+
+        if z is not None:
+            self.raise_between_error("Z", z, self.MIN_X, self.MAX_X)
+            gcode += f" Z{z}"
+
+        if f is not None:
+            self.raise_between_error("Speed", f, self.MIN_SPEED, self.MAX_SPEED)
+            gcode += f" F{f}"
+
+        gcode += ":"
+        return gcode
 
     def gcode_parser(self):
         """
@@ -147,39 +241,22 @@ class GcodeController:
 
         return self.printer_status
 
-    def gcode(self, x=None, y=None, z=None, f=None) -> str:
-        """
-        Method to prepare the gcode with some validation checks
-        """
-        gcode = "G1"
-        if x is not None:
-            self.raise_between_error("X", x, self.MIN_X, self.MAX_X)
-            gcode += f" X{x}"
-
-        if y is not None:
-            self.raise_between_error("Y", y, self.MIN_Y, self.MAX_Y)
-            gcode += f" Y{y}"
-
-        if z is not None:
-            self.raise_between_error("Z", z, self.MIN_X, self.MAX_X)
-            gcode += f" Z{z}"
-
-        if f is not None:
-            self.raise_between_error("Speed", f, self.MIN_SPEED, self.MAX_SPEED)
-            gcode += f" F{f}"
-
-        gcode += ":"
-        return gcode
-
-    # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
-    #     return f"G1 X{x} Y{y} Z{z} F{f}"
-
     def raise_between_error(self, label: str, value: float, min: float, max: float):
         """
         validation check to make sure the the gcode is safe to output
         """
         if value <= min or value >= max:
             raise ValueError(f"Make sure {label} is between {min} and {max}")
+
+    def set_prepare_position(self, Y_POS=None) -> None:
+        """
+        Sets the position of beam for testing
+        """
+        self.send_movement(x=self.get_prepare_position_x, y=Y_POS)
+
+    #########################################
+    ############## ACTIONS ##################
+    #########################################
 
     def send_gcode(self, gcode) -> None:
         """
@@ -193,35 +270,19 @@ class GcodeController:
                 self.serial.write(self.current_gcode)
                 break
 
+    def set_speed(self, speed) -> None:
+        """
+        sets the speed of the printer
+        """
+        set_speed_gcode = self.gcode(f=speed)
+        self.printer_speed = speed
+        self.send_gcode(set_speed_gcode)
+
     def send_movement(self, x=None, y=None, z=None, f=None):
         gcode = self.gcode(x, y, z, f)
         while not self.at_goal:
             sleep(1)
         self.send_gcode(gcode)
-
-    def set_prepare_position(self, Y_POS=None) -> None:
-        """
-        Sets the position of beam for testing
-        """
-        gcode = self.gcode(x=self.get_prepare_position_x, y=Y_POS)
-        self.send_gcode(gcode)
-
-    def prepare(self) -> None:
-        self.send_gcode("G28 XY: G1 Y100 X20:")
-        self.set_speed(self.printer_speed)
-
-    def set_speed(self, speed) -> None:
-        f_gcode = f"G1 F{speed}:"
-        self.printer_speed = speed
-        self.send_gcode(f_gcode)
-
-    def beam_test_prepare(self) -> None:
-        self.send_gcode(
-            self.gcode(
-                x=self.get_prepare_position_x - 5,
-                y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
-            )
-        )
 
     def send_wait(self, m_sec) -> None:
         """this sucks, don't use it"""
@@ -231,83 +292,18 @@ class GcodeController:
     def send_message(self, message) -> None:
         self.send_gcode(f"M117 {message}:")
 
-    # def std_out_data_gcode(self, gcode):
-    def increments_beam_test(
-        self,
-        total_x_distance: float = 10,
-        total_y_distance: float = 10,
-        increments_x: int = 1,
-        increments_y: int = 1,
-        pause_sec: int = 3,
-    ) -> None:
-        # -- prepare printer position for the test --
-        controller = self
-        inc_dist_x = (
-            total_x_distance if increments_x == 0 else total_x_distance / increments_x
-        )
-        inc_dist_y = (
-            total_y_distance if increments_y == 0 else total_y_distance / increments_y
-        )
-        starting_y_pos = self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + self.WHISKER_TIP_Y + 5
-        deflect_x_distance = 0
+    def prepare(self) -> None:
+        """
+        Calibrates X and Y axis on the 3D Printer
+        """
+        self.send_gcode("G28 XY:")
+        self.set_speed(self.printer_speed)
 
-        controller.send_message("Preparing for increment test")
-        controller.beam_test_prepare()
-        sleep(5)
-        controller.send_message("Begin increment test")
-        print_to_stdout("Begin increment test")
-
-        deflect_y_pos = starting_y_pos
-        for _ in range(increments_y + 1):
-            x_spacing = 10
-            y_spacing = 10
-            controller.send_gcode(
-                controller.gcode(x=self.get_prepare_position_x - x_spacing)
-            )
-            controller.send_gcode(controller.gcode(y=deflect_y_pos))
-
-            deflect_x_distance = inc_dist_x
-            for _ in range(increments_x + 1):
-                std_out_data = {}
-                std_out_data["timestamp"] = time()
-                std_out_data["distance_on_shaft"] = self.beam_along_whisker
-                std_out_data["bend_distance"] = deflect_x_distance
-                print_to_stdout(self.data_for_std_out)
-
-                controller.send_gcode(
-                    controller.gcode(
-                        x=self.WHISKER_X + deflect_x_distance, y=deflect_y_pos
-                    )
-                )
-                sleep(pause_sec)
-                deflect_x_distance += inc_dist_x
-
-            std_out_data = {}
-            std_out_data["timestamp"] = time()
-            std_out_data["distance_on_shaft"] = self.beam_along_whisker
-            std_out_data["bend_distance"] = deflect_x_distance
-            print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
-
-            deflect_y_pos += inc_dist_y
-            controller.send_gcode(controller.gcode(x=self.WHISKER_X - x_spacing))
-            controller.send_gcode(
-                controller.gcode(x=self.WHISKER_X - x_spacing, y=deflect_y_pos)
-            )
-            sleep(3)
-        controller.send_message("Returning to start")
-        controller.beam_test_prepare()
-        controller.send_message("Increment test complete")
-        sleep(5)
-        controller.send_message("yo yo, what next?")
-
-    def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
-        self.beam_test_prepare()
-        gcode_prepare = self.gcode(x=self.get_prepare_position_x, y=y_distance)
-        gcode_bend = self.gcode(x=x_deflection, y=y_distance)
-        gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
-        for _ in range(count):
-            gcode += gcode
-        self.send_gcode(gcode)
+    # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
+    #     ''' TODO: in progress'''
+    #     for i in range(x - self.x):
+    #     while not se:
+    #     return f"G1 X{x} Y{y} Z{z} F{f}"
 
     #########################################
     ############# PROPERTIES ################
