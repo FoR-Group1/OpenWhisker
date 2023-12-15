@@ -26,12 +26,12 @@ class GcodeController:
     POS_MATCH = ["X", "Y", "Z", "Count", "X", "Y", "Z"]
 
     BEAM_START: Final[float] = -13.20  # relative to the nozzle x position
-    BEAM_THICKNESS: Final[float] = 16.20
+    BEAM_THICKNESS: Final[float] = 16.20  # ie thickeness of ruler
     BEAM_END: Final[float] = BEAM_START + BEAM_THICKNESS
 
     BEAM_EDGE_Y_RELATIVE_TO_NOZZLE: Final[float] = 56.75
     WHISKER_X: Final[float] = 150.0  # set the x distance of the whisker
-    WHISKER_TIP_Y: Final[float] = 35
+    WHISKER_TIP_Y: Final[float] = 35  # from the base of the printer bed
     WHISKER_LENGTH_Y: Final[float] = 150
 
     LOG_FOLDER: Final[str] = os.path.dirname(os.path.abspath(__file__)) + "/log/"
@@ -111,7 +111,7 @@ class GcodeController:
 
     def beam_test_prepare(self) -> None:
         self.send_movement(
-            x=self.get_prepare_position_x - 5,
+            x=self.beam_from_whisker_tip_x - 5,
             y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
         )
 
@@ -149,7 +149,6 @@ class GcodeController:
             deflect_x_distance = inc_dist_x
             for _ in range(increments_x + 1):
                 print_to_stdout(self.data_for_std_out)
-
                 self.send_movement(
                     x=self.WHISKER_X + deflect_x_distance, y=deflect_y_pos
                 )
@@ -157,7 +156,6 @@ class GcodeController:
                 deflect_x_distance += inc_dist_x
 
             print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
-
             deflect_y_pos += inc_dist_y
             sleep(3)
         controller.send_message("Returning to start")
@@ -168,7 +166,7 @@ class GcodeController:
 
     def beam_test(self, count=1, pause=2, x_deflection=None, y_distance=None) -> None:
         self.beam_test_prepare()
-        gcode_prepare = self.gcode(x=self.get_prepare_position_x, y=y_distance)
+        gcode_prepare = self.gcode(x=self.beam_from_whisker_tip_x, y=y_distance)
         gcode_bend = self.gcode(x=x_deflection, y=y_distance)
         gcode = gcode_prepare + gcode_bend + f"G4 S{pause}:"
         for _ in range(count):
@@ -248,12 +246,6 @@ class GcodeController:
         if value <= min or value >= max:
             raise ValueError(f"Make sure {label} is between {min} and {max}")
 
-    def set_prepare_position(self, Y_POS=None) -> None:
-        """
-        Sets the position of beam for testing
-        """
-        self.send_movement(x=self.get_prepare_position_x, y=Y_POS)
-
     #########################################
     ############## ACTIONS ##################
     #########################################
@@ -305,6 +297,13 @@ class GcodeController:
     #     while not se:
     #     return f"G1 X{x} Y{y} Z{z} F{f}"
 
+    # def u_motion_around_whisker(self):
+    #     # make sure beam is in the correct position
+    #     self.beam_test_prepare()
+    #     self.send_movement(x = self.x - 20)
+    #     self.send_movement(y = self.WHISKER_TIP_Y - 20)
+    #     self.send_movement(x = )
+
     #########################################
     ############# PROPERTIES ################
     #########################################
@@ -313,13 +312,26 @@ class GcodeController:
     def data_for_std_out(self) -> dict:
         data = {}
         data["timestamp"] = time()
-        data["distance_on_shaft"] = self.beam_along_whisker
+        data["distance_on_shaft"] = self.beam_from_whisker_tip_y
         data["bend_distance"] = self.x - self.WHISKER_X
         return data
 
     @property
-    def beam_along_whisker(self) -> float:
+    def beam_from_whisker_tip_x(self) -> float:
+        """
+        Evaluates the preparation position of the contact point of rigid beam
+        """
+        return float(self.WHISKER_X - self.get_beam_contact_position_x)
+
+    @property
+    def beam_from_whisker_tip_y(self) -> float:
         return self.y - self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.WHISKER_TIP_Y
+
+    @property
+    def beam_from_whisker_tip(self) -> tuple:
+        beam_x = self.beam_from_whisker_tip_x
+        beam_y = self.beam_from_whisker_tip_y
+        return beam_x, beam_y
 
     @property
     def at_goal(self) -> bool:
@@ -351,22 +363,11 @@ class GcodeController:
         return self.POS_DATA_REGEX.findall(self.printer_status) == self.POS_MATCH
 
     @property
-    def get_prepare_position_x(self) -> float:
-        """
-        Evaluates the preparation position of the contact point of rigid beam
-        """
-        return float(self.WHISKER_X - self.get_beam_contact_position_x)
-
-    @property
     def get_beam_contact_position_x(self) -> float:
         """
         Evaluates the current position of the contact point of rigid beam
         """
         return float(self.BEAM_START + self.BEAM_THICKNESS)
-
-    @property
-    def home_xy(self) -> str:
-        return "G28 XY:"
 
     @property
     def log_data(self):
@@ -390,11 +391,7 @@ class GcodeController:
 def print_to_stdout(*a):
     print(*a, file=sys.stdout)
     with open("test_data.txt", mode="a") as file:
-        # writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
         file.write("\n" + str(*a))
-
-    # sys.stdout.write(*a)
-    # sys.stdout.flush()
 
 
 # Y91 tip of whisker with ruler
