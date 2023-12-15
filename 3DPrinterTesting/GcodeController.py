@@ -302,9 +302,11 @@ class GcodeController:
     def u_motion_around_whisker(self):
         # make sure beam is in the correct position
         self.beam_test_prepare()
+        last_y = self.y
         self.send_movement(x=self.x - self.X_PADDING)
         self.send_movement(y=self.WHISKER_TIP_Y - self.Y_PADDING)
         self.send_movement(x=self.WHISKER_X + self.BEAM_THICKNESS + self.X_PADDING)
+        self.send_movement(y=last_y)
 
     #########################################
     ############# PROPERTIES ################
