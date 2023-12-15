@@ -34,6 +34,9 @@ class GcodeController:
     WHISKER_TIP_Y: Final[float] = 35  # from the base of the printer bed
     WHISKER_LENGTH_Y: Final[float] = 150
 
+    X_PADDING = 20
+    Y_PADDING = 20
+
     LOG_FOLDER: Final[str] = os.path.dirname(os.path.abspath(__file__)) + "/log/"
     LOG_FILE: str = LOG_FOLDER + "log.csv"
 
@@ -142,10 +145,8 @@ class GcodeController:
 
         deflect_y_pos = starting_y_pos
         for _ in range(increments_y + 1):
-            x_spacing = 10  # magic number, this should be set as a class constant maybe
-            # y_spacing = 10
-            self.send_movement(x=self.WHISKER_X - x_spacing)
-            self.send_movement(x=self.WHISKER_X - x_spacing, y=deflect_y_pos)
+            self.send_movement(x=self.WHISKER_X - self.X_PADDING)
+            self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
             deflect_x_distance = inc_dist_x
             for _ in range(increments_x + 1):
                 print_to_stdout(self.data_for_std_out)
@@ -294,12 +295,14 @@ class GcodeController:
     #     while not se:
     #     return f"G1 X{x} Y{y} Z{z} F{f}"
 
-    # def u_motion_around_whisker(self):
-    #     # make sure beam is in the correct position
-    #     self.beam_test_prepare()
-    #     self.send_movement(x = self.x - 20)
-    #     self.send_movement(y = self.WHISKER_TIP_Y - 20)
-    #     self.send_movement(x = )
+    def u_motion_around_whisker(self):
+        # make sure beam is in the correct position
+        self.beam_test_prepare()
+        last_y = self.y
+        self.send_movement(x=self.x - self.X_PADDING)
+        self.send_movement(y=self.WHISKER_TIP_Y - self.Y_PADDING)
+        self.send_movement(x=self.WHISKER_X + self.BEAM_THICKNESS + self.X_PADDING)
+        self.send_movement(y=last_y)
 
     #########################################
     ############# PROPERTIES ################
