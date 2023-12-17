@@ -1,0 +1,45 @@
+-- initiating 3D Printer connection --
+Begin increment test
+{'timestamp': 1702643085.8070254, 'distance_on_shaft': 5.959999999999994, 'bend_distance': -7.849999999999994}
+{'timestamp': 1702643087.8136864, 'distance_on_shaft': 5.8799999999999955, 'bend_distance': 2.1500000000000057}
+{'timestamp': 1702643089.8293128, 'distance_on_shaft': 5.859999999999999, 'bend_distance': 4.150000000000006}
+{'timestamp': 1702643091.8602889, 'distance_on_shaft': 5.859999999999999, 'bend_distance': 4.150000000000006}
+{'timestamp': 1702643093.891332, 'distance_on_shaft': 5.829999999999998, 'bend_distance': 8.150000000000006}
+Maximum deflection:{'timestamp': 1702643095.9171698, 'distance_on_shaft': 5.819999999999993, 'bend_distance': 10.150000000000006}
+{'timestamp': 1702643098.9386344, 'distance_on_shaft': 5.819999999999993, 'bend_distance': 10.150000000000006}
+{'timestamp': 1702643100.9455473, 'distance_on_shaft': 10.379999999999995, 'bend_distance': 2.1699999999999875}
+{'timestamp': 1702643102.9612155, 'distance_on_shaft': 10.36, 'bend_distance': 4.1699999999999875}
+{'timestamp': 1702643104.9972658, 'distance_on_shaft': 10.349999999999994, 'bend_distance': 6.1699999999999875}
+{'timestamp': 1702643107.0081868, 'distance_on_shaft': 10.329999999999998, 'bend_distance': 8.169999999999987}
+Maximum deflection:{'timestamp': 1702643109.0240436, 'distance_on_shaft': 10.310000000000002, 'bend_distance': 10.169999999999987}
+{'timestamp': 1702643112.0505383, 'distance_on_shaft': 10.310000000000002, 'bend_distance': 10.169999999999987}
+{'timestamp': 1702643115.1181831, 'distance_on_shaft': 14.879999999999995, 'bend_distance': 2.1899999999999977}
+{'timestamp': 1702643117.149359, 'distance_on_shaft': 14.86, 'bend_distance': 4.189999999999998}
+{'timestamp': 1702643119.1651123, 'distance_on_shaft': 14.849999999999994, 'bend_distance': 6.189999999999998}
+{'timestamp': 1702643121.1806586, 'distance_on_shaft': 14.829999999999998, 'bend_distance': 8.189999999999998}
+Maximum deflection:{'timestamp': 1702643123.2069983, 'distance_on_shaft': 14.810000000000002, 'bend_distance': 10.189999999999998}
+{'timestamp': 1702643126.2436883, 'distance_on_shaft': 14.810000000000002, 'bend_distance': 10.189999999999998}
+{'timestamp': 1702643128.2503984, 'distance_on_shaft': 19.379999999999995, 'bend_distance': 2.210000000000008}
+{'timestamp': 1702643130.2814085, 'distance_on_shaft': 19.36, 'bend_distance': 4.210000000000008}
+{'timestamp': 1702643132.312511, 'distance_on_shaft': 19.349999999999994, 'bend_distance': 6.210000000000008}
+{'timestamp': 1702643134.3436728, 'distance_on_shaft': 19.349999999999994, 'bend_distance': 6.210000000000008}
+Maximum deflection:{'timestamp': 1702643136.3694992, 'distance_on_shaft': 19.310000000000002, 'bend_distance': 10.210000000000008}
+{'timestamp': 1702643139.3807168, 'distance_on_shaft': 19.310000000000002, 'bend_distance': 10.210000000000008}
+{'timestamp': 1702643141.3875003, 'distance_on_shaft': 23.879999999999995, 'bend_distance': 2.2299999999999898}
+{'timestamp': 1702643143.4030747, 'distance_on_shaft': 23.86, 'bend_distance': 4.22999999999999}
+{'timestamp': 1702643145.4339693, 'distance_on_shaft': 23.849999999999994, 'bend_distance': 6.22999999999999}
+{'timestamp': 1702643147.4548419, 'distance_on_shaft': 23.83, 'bend_distance': 8.22999999999999}
+Maximum deflection:{'timestamp': 1702643149.475603, 'distance_on_shaft': 23.810000000000002, 'bend_distance': 10.22999999999999}
+{'timestamp': 1702643152.4816341, 'distance_on_shaft': 23.810000000000002, 'bend_distance': 10.22999999999999}
+{'timestamp': 1702643154.4883718, 'distance_on_shaft': 28.379999999999995, 'bend_distance': 2.25}
+{'timestamp': 1702643156.5469286, 'distance_on_shaft': 28.36, 'bend_distance': 4.25}
+{'timestamp': 1702643158.5624733, 'distance_on_shaft': 28.349999999999994, 'bend_distance': 6.25}
+{'timestamp': 1702643160.5835316, 'distance_on_shaft': 28.33, 'bend_distance': 8.25}
+Maximum deflection:{'timestamp': 1702643162.5991063, 'distance_on_shaft': 28.310000000000002, 'bend_distance': 10.25}
+{'timestamp': 1702643165.6256945, 'distance_on_shaft': 28.310000000000002, 'bend_distance': 10.25}
+{'timestamp': 1702643167.6325088, 'distance_on_shaft': 28.310000000000002, 'bend_distance': 10.25}
+{'timestamp': 1702643169.6634045, 'distance_on_shaft': 32.86, 'bend_distance': 4.27000000000001}
+{'timestamp': 1702643171.6740537, 'distance_on_shaft': 32.849999999999994, 'bend_distance': 6.27000000000001}
+{'timestamp': 1702643173.6793926, 'distance_on_shaft': 32.83, 'bend_distance': 8.27000000000001}
+Maximum deflection:{'timestamp': 1702643175.7155814, 'distance_on_shaft': 32.81, 'bend_distance': 10.27000000000001}
+complete

@@ -1,0 +1,15 @@
+-- initiating 3D Printer connection --
+Begin increment test
+{'timestamp': 1702641482.0869937, 'distance_on_shaft': 5.959999999999994, 'bend_distance': -7.849999999999994}
+{'timestamp': 1702641485.0935757, 'distance_on_shaft': 5.8700000000000045, 'bend_distance': 3.1500000000000057}
+{'timestamp': 1702641488.1195564, 'distance_on_shaft': 5.849999999999994, 'bend_distance': 6.150000000000006}
+Maximum deflection:{'timestamp': 1702641491.1248856, 'distance_on_shaft': 5.819999999999993, 'bend_distance': 9.150000000000006}
+{'timestamp': 1702641494.1516576, 'distance_on_shaft': 5.819999999999993, 'bend_distance': 9.150000000000006}
+{'timestamp': 1702641497.1581337, 'distance_on_shaft': 13.370000000000005, 'bend_distance': 3.1899999999999977}
+{'timestamp': 1702641500.1788876, 'distance_on_shaft': 13.349999999999994, 'bend_distance': 6.189999999999998}
+Maximum deflection:{'timestamp': 1702641503.2050095, 'distance_on_shaft': 13.319999999999993, 'bend_distance': 9.189999999999998}
+{'timestamp': 1702641506.2318494, 'distance_on_shaft': 13.319999999999993, 'bend_distance': 9.189999999999998}
+{'timestamp': 1702641509.2384953, 'distance_on_shaft': 20.870000000000005, 'bend_distance': 3.219999999999999}
+{'timestamp': 1702641512.259298, 'distance_on_shaft': 20.849999999999994, 'bend_distance': 6.219999999999999}
+Maximum deflection:{'timestamp': 1702641515.295469, 'distance_on_shaft': 20.819999999999993, 'bend_distance': 9.219999999999999}
+complete
