@@ -5,7 +5,6 @@ from time import sleep, time
 import csv
 import re
 import os
-import queue
 import sys
 
 
@@ -33,7 +32,10 @@ class GcodeController:
     WHISKER_X: Final[float] = 150.0  # set the x distance of the whisker
     WHISKER_TIP_Y: Final[float] = 35  # from the base of the printer bed
     WHISKER_LENGTH_Y: Final[float] = 150
+    WHISKER_TIP_TEST_POS: Final[float] = 5
 
+    BEAM_TOUCH_WHISKER_LEFT = WHISKER_X - BEAM_END
+    BEAM_TOUCH_WHISKER_RIGHT = WHISKER_X + BEAM_END
     X_PADDING = 20
     Y_PADDING = 20
 
@@ -112,10 +114,25 @@ class GcodeController:
                     self.send_gcode("M114:")
                 self.read_and_store_serial()
 
-    def beam_test_prepare(self) -> None:
+    def beam_test_prepare(self, *direction: str) -> None:
         self.send_movement(
-            x=self.beam_from_whisker_tip_x - 5,
-            y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
+            y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.Y_PADDING
+        )
+
+        if self.left_of_whisker or self.inline_of_whisker or direction == "left":
+            self.send_movement(
+                x=self.BEAM_TOUCH_WHISKER_LEFT - self.X_PADDING,
+            )
+        elif self.right_of_whisker or direction == "right":
+            self.send_movement(
+                x=self.BEAM_TOUCH_WHISKER_RIGHT + self.X_PADDING,
+            )
+        else:
+            raise ValueError("Preparation position unclear")
+        self.send_movement(
+            y=self.WHISKER_TIP_Y
+            + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE
+            + self.WHISKER_TIP_TEST_POS
         )
 
     def increments_beam_test(
@@ -126,21 +143,26 @@ class GcodeController:
         increments_y: int = 1,
         pause_sec: int = 3,
     ) -> None:
+        if right_of_whisker:
+            raise ValueError("Test Cannot be performed on the right of the whisker")
         # -- prepare printer position for the test --
-        controller = self
         inc_dist_x = (
             total_x_distance if increments_x == 0 else total_x_distance / increments_x
         )
         inc_dist_y = (
             total_y_distance if increments_y == 0 else total_y_distance / increments_y
         )
-        starting_y_pos = self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + self.WHISKER_TIP_Y + 5
+        starting_y_pos = (
+            self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE
+            + self.WHISKER_TIP_Y
+            + self.WHISKER_TIP_TEST_POS
+        )
         deflect_x_distance = 0
 
-        controller.send_message("Preparing for increment test")
-        controller.beam_test_prepare()
+        self.send_message("Preparing for increment test")
+        self.beam_test_prepare()
         sleep(5)
-        controller.send_message("Begin increment test")
+        self.send_message("Begin increment test")
         print_to_stdout("Begin increment test")
 
         deflect_y_pos = starting_y_pos
@@ -159,11 +181,67 @@ class GcodeController:
             print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
             deflect_y_pos += inc_dist_y
             sleep(3)
-        controller.send_message("Returning to start")
-        controller.beam_test_prepare()
-        controller.send_message("Increment test complete")
+        self.send_message("Returning to start")
+        self.beam_test_prepare()
+        self.send_message("Increment test complete")
         sleep(5)
-        controller.send_message("yo yo, what next?")
+        self.send_message("yo yo, what next?")
+
+    def increments_beam_test_reverse(
+        self,
+        total_x_distance: float = 10,
+        total_y_distance: float = 10,
+        increments_x: int = 1,
+        increments_y: int = 1,
+        pause_sec: int = 3,
+    ) -> None:
+        if self.left_of_whisker:
+            raise ValueError("Test Cannot be performed on the left of the whisker")
+        # -- prepare printer position for the test --
+        inc_dist_x = -(
+            total_x_distance if increments_x == 0 else total_x_distance / increments_x
+        )
+        inc_dist_y = -(
+            total_y_distance if increments_y == 0 else total_y_distance / increments_y
+        )
+        starting_y_pos = (
+            self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE
+            + self.WHISKER_TIP_Y
+            + self.WHISKER_TIP_TEST_POS
+        )
+        deflect_x_distance = 0
+
+        self.send_message("Preparing for reverse increment test")
+        # if (self.left_of_whisker):
+        self.beam_test_prepare()
+        if self.left_of_whisker:
+            self.u_motion_around_whisker()
+        self.beam_test_prepare()
+        sleep(5)
+
+        self.send_message("Begin reverse increment test")
+        print_to_stdout("Begin reverse increment test")
+
+        deflect_y_pos = starting_y_pos
+        for _ in range(increments_y + 1):
+            self.send_movement(x=self.WHISKER_X + self.X_PADDING)
+            self.send_movement(x=self.WHISKER_X + self.X_PADDING, y=deflect_y_pos)
+            deflect_x_distance = inc_dist_x
+            for _ in range(increments_x + 1):
+                print_to_stdout(self.data_for_std_out)
+                self.send_movement(
+                    x=self.WHISKER_X + deflect_x_distance, y=deflect_y_pos
+                )
+                sleep(pause_sec)
+                deflect_x_distance += inc_dist_x
+            print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
+            deflect_y_pos += inc_dist_y
+            sleep(3)
+        self.send_message("Returning to start")
+        self.beam_test_prepare()
+        self.send_message("Reverse increment test complete")
+        sleep(5)
+        self.send_message("yo yo, what next?")
 
     #########################################
     ############## UTILITY ##################
@@ -284,8 +362,8 @@ class GcodeController:
         """
         Calibrates X and Y axis on the 3D Printer
         """
-        self.send_gcode("G21:") # setting the printer to mm
-        self.send_gcode("G28 XY:") # homing X and Y of the printer
+        self.send_gcode("G21:")  # setting the printer to mm
+        self.send_gcode("G28 XY:")  # homing X and Y of the printer
         self.set_speed(self.printer_speed)
         self.calibrated = True
 
@@ -299,9 +377,18 @@ class GcodeController:
         # make sure beam is in the correct position
         self.beam_test_prepare()
         last_y = self.y
-        self.send_movement(x=self.x - self.X_PADDING)
-        self.send_movement(y=self.WHISKER_TIP_Y - self.Y_PADDING)
-        self.send_movement(x=self.WHISKER_X + self.BEAM_THICKNESS + self.X_PADDING)
+        neg = -1 if self.right_of_whisker else 1  # for bi-directional usage
+
+        # move beam away from the whisker in X
+        self.send_movement(x=self.x - (neg * self.X_PADDING))
+        # move beam beyon the whisker in Y
+        self.send_movement(
+            y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.Y_PADDING
+        )
+        # move beam past the whisker in X
+        self.send_movement(
+            x=self.WHISKER_X + neg * (self.BEAM_THICKNESS + self.X_PADDING)
+        )
         self.send_movement(y=last_y)
 
     #########################################
@@ -318,14 +405,23 @@ class GcodeController:
 
     @property
     def beam_from_whisker_tip_x(self) -> float:
-        """
-        Evaluates the preparation position of the contact point of rigid beam
-        """
-        return float(self.WHISKER_X - self.get_beam_contact_position_x)
+        return self.WHISKER_X - (self.x + self.BEAM_END)
 
     @property
     def beam_from_whisker_tip_y(self) -> float:
         return self.y - self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE - self.WHISKER_TIP_Y
+
+    @property
+    def left_of_whisker(self) -> bool:
+        return self.beam_from_whisker_tip_x > 0
+
+    @property
+    def right_of_whisker(self) -> bool:
+        return self.beam_from_whisker_tip_x < 0
+
+    @property
+    def inline_of_whisker(self) -> bool:
+        return self.beam_from_whisker_tip_x == 0
 
     @property
     def beam_from_whisker_tip(self) -> tuple:
@@ -361,13 +457,6 @@ class GcodeController:
     def printer_status_is_position_data(self) -> bool:
         """Uses Regex to determine if the current status is Positional data"""
         return self.POS_DATA_REGEX.findall(self.printer_status) == self.POS_MATCH
-
-    @property
-    def get_beam_contact_position_x(self) -> float:
-        """
-        Evaluates the current position of the contact point of rigid beam
-        """
-        return float(self.BEAM_START + self.BEAM_THICKNESS)
 
     @property
     def log_data(self):
