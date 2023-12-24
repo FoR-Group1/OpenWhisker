@@ -389,7 +389,7 @@ class GcodeController:
         self.calibrated = True
 
     def progressive_gcode_move(
-        self, input_goal_x=None, input_goal_y=None, input_goal_z=None, f=None
+        self, input_goal_x=None, input_goal_y=None, input_goal_z=None, inc_dist = 1
     ) -> str:
         """TODO: in progress"""
         # put printiner into relative mode
@@ -409,18 +409,19 @@ class GcodeController:
         )
 
         for _ in range(step_count):
+            self.send_message(f'ProgMot to [{input_goal_x, input_goal_y, input_goal_z}]')
             if self.feedback_status != 0:
                 break
             self.send_movement(step_x, step_y, step_z)
 
         # if the printer when into a non safe status
         if self.feedback_status != 0:
+            self.send_message('Feedback_error') # TODO: add more detail
             # recovery action
             # TODO: get OUT of relative mode
-            print("placeholder action")
+
 
     def calculate_distance_per_gcode(self, increment_distance = 1, x_dist, y_dist, z_dist):
-        
 
         # FIXME: need to do actual calc, this is an exmaple
         return 50, [0.1, 0.6, 0.3]
