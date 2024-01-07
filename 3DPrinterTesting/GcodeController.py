@@ -42,11 +42,25 @@ class GcodeController:
     LOG_FOLDER: Final[str] = os.path.dirname(os.path.abspath(__file__)) + "/log/"
     LOG_FILE: str = LOG_FOLDER + "log.csv"
 
+    FEEDBACK_CODES = {
+        0: "SAFE",
+        1: "HIGH MAGENETIC RESPONSE",
+        2: "HIGH VOLTAGE RESPONSE",
+        999: "UNSAFE",
+    }
+
+    # TODO: ADD THE VALID PRINTER MODES HERE
+    PRINTER_MODES = {
+        "RELATIVE": "something",
+        "ORIGIN": "something else",
+    }
+
     def __init__(self, port=PORT):
         print("-- initiating 3D Printer connection --")
         self.port: str = port
         self.serial: serial.Serial = serial.Serial(self.port, 115200)
         self.calibrated = False
+        self.feedback_status = 0
 
         # initialising printer position variables
         self.x: float = 0
@@ -357,6 +371,13 @@ class GcodeController:
 
     def send_message(self, message) -> None:
         self.send_gcode(f"M117 {message}:")
+        self.current_message = message
+
+    def set_printer_mode(self, type) -> None:
+        if type not in self.PRINTER_MODES:
+            raise ValueError("This is not a valid printer mode type")
+        self.send_gcode(f"")
+        self.current_mode
 
     def prepare(self) -> None:
         """
@@ -367,11 +388,43 @@ class GcodeController:
         self.set_speed(self.printer_speed)
         self.calibrated = True
 
-    # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
-    #     ''' TODO: in progress'''
-    #     for i in range(x - self.x):
-    #     while not se:
-    #     return f"G1 X{x} Y{y} Z{z} F{f}"
+    def progressive_gcode_move(
+        self, input_goal_x=None, input_goal_y=None, input_goal_z=None, inc_dist = 1
+    ) -> str:
+        """TODO: in progress"""
+        # put printiner into relative mode
+        self.send_gcode("TODO: USE RELATIVE MODE")
+        origin_x = self.x
+        origin_y = self.y
+        origin_z = self.z
+
+        # caculating the absolute distance values
+        x_dist = input_goal_x - origin_x if input_goal_x else 0
+        y_dist = input_goal_y - origin_y if input_goal_y else 0
+        z_dist = input_goal_z - origin_z if input_goal_z else 0
+
+        # TODO: calculate the vector to travel a 1mm in 3d space eg:
+        step_count, [step_x, step_y, step_z] = self.calculate_distance_per_gcode(
+            inc_dist, [x_dist, y_dist, z_dist]
+        )
+
+        for _ in range(step_count):
+            self.send_message(f'ProgMot to [{input_goal_x, input_goal_y, input_goal_z}]')
+            if self.feedback_status != 0:
+                break
+            self.send_movement(step_x, step_y, step_z)
+
+        # if the printer when into a non safe status
+        if self.feedback_status != 0:
+            self.send_message('Feedback_error') # TODO: add more detail
+            # recovery action
+            # TODO: get OUT of relative mode
+
+
+    def calculate_distance_per_gcode(self, increment_distance = 1, x_dist, y_dist, z_dist):
+
+        # FIXME: need to do actual calc, this is an exmaple
+        return 50, [0.1, 0.6, 0.3]
 
     def u_motion_around_whisker(self):
         # make sure beam is in the correct position
