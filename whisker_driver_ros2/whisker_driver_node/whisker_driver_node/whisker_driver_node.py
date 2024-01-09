@@ -12,6 +12,7 @@ from collections import deque
 from threading import Lock
 from copy import deepcopy
 from geometry_msgs.msg import PoseStamped
+import time
 
 class WiskerDriverNode(Node):
     def __init__(self):
@@ -37,7 +38,7 @@ class WiskerDriverNode(Node):
 
         # sensor data serial output regex
         self.pattern = re.compile(
-            r"(19\d\d|20\d\d)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T(\d\d):(\d\d):(\d\d.\d+).+SensorSample { x: (\d+), y: (\d+), z: (\d+)"
+            r"^\d\d([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{4})"
         )
 
         self.magnetometer_reading_publisher = self.create_publisher(
@@ -53,23 +54,14 @@ class WiskerDriverNode(Node):
     def serial_data_thread(self):
         while True:
             line = self.ser.readline().decode("utf-8")
+            stamp = time.time()
             match = self.pattern.search(line)
             if match is not None:
-                YY, MM, DD, h, m, s, x, y, z = match.groups()
-                dt = datetime.datetime(
-                    int(YY),
-                    int(MM),
-                    int(DD),
-                    int(h),
-                    int(m),
-                    math.floor(float(s)),
-                    math.floor(float(s) % 1 * 1e6),
-                )
-
+                x, y, z = match.groups()
                 msg = MagneticField()
                 msg.header.frame_id = "magnetometer"
-                msg.header.stamp.sec = math.floor(dt.timestamp())
-                msg.header.stamp.nanosec = dt.timestamp() % 1 * 1e9
+                msg.header.stamp.sec = math.floor(stamp)
+                msg.header.stamp.nanosec = stamp % 1 * 1e9
                 msg.magnetic_field.x = int(x)
                 msg.magnetic_field.y = int(y)
                 msg.magnetic_field.z = int(z)
