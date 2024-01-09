@@ -1,0 +1,7 @@
+float32 total_x_distance
+float32 total_y_distance
+uint32 increments_x
+uint32 increments_y
+uint32 pause_sec
+---
+std_msgs/Empty done

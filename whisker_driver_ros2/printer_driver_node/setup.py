@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = '3d_printer_driver_node'
+package_name = 'printer_driver_node'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            '3d_printer_driver_node = 3d_printer_driver_node.3d_printer_driver_node:main'
+            'printer_driver_node = printer_driver_node.printer_driver_node:main'
         ],
     },
 )
