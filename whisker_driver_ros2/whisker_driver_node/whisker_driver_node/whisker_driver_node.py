@@ -11,7 +11,7 @@ import datetime
 from collections import deque
 from threading import Lock
 from copy import deepcopy
-from geometry_msgs.msg import PoseStamped()
+from geometry_msgs.msg import PoseStamped
 
 class WiskerDriverNode(Node):
     def __init__(self):
