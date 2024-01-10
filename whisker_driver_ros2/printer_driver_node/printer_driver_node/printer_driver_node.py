@@ -17,7 +17,8 @@ from tf2_ros import TransformBroadcaster, StaticTransformBroadcaster
 from geometry_msgs.msg import TransformStamped
 from printer_driver_node.utils import quaternion_from_euler
 from whisker_interfaces.srv import IncrementsBeamTest
-
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 class PrinterDriverNode(Node):
     def __init__(self):
@@ -42,12 +43,14 @@ class PrinterDriverNode(Node):
         # calibrate the printer head location
         self.controller.prepare()
 
+        self.location_poll_cbg = MutuallyExclusiveCallbackGroup()
         self.location_poll_timer = self.create_timer(
             1
             / self.get_parameter("location_polling_rate_hz")
             .get_parameter_value()
             .double_value,
             self.location_poll_timer_callback,
+            callback_group=self.location_poll_cbg,
         )
         self.tf_broadcaster = TransformBroadcaster(self)
         self.static_tf_broadcaster = StaticTransformBroadcaster(self)
@@ -65,10 +68,12 @@ class PrinterDriverNode(Node):
         tf.transform.rotation.w = q[3]
         self.static_tf_broadcaster.sendTransform(tf)
 
+        self.increments_beam_test_service_cbg = MutuallyExclusiveCallbackGroup()
         self.increments_beam_test_service = self.create_service(
             IncrementsBeamTest,
             "increments_beam_test",
             self.increments_beam_test_callback,
+            callback_group=self.increments_beam_test_service_cbg,
         )
 
     def location_poll_timer_callback(self):
@@ -106,7 +111,9 @@ class PrinterDriverNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     printer_driver_node = PrinterDriverNode()
-    rclpy.spin(printer_driver_node)
+    executor = MultiThreadedExecutor()
+    executor.add_node(printer_driver_node)
+    executor.spin()
     printer_driver_node.destroy_node()
     rclpy.shutdown()
 
