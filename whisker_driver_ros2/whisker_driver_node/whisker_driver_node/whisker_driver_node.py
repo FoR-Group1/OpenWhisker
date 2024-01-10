@@ -6,7 +6,6 @@ from rclpy.node import Node
 import serial
 import re
 import math
-from sensor_msgs.msg import MagneticField
 import datetime
 from collections import deque
 from threading import Lock
@@ -14,6 +13,9 @@ from copy import deepcopy
 from geometry_msgs.msg import PoseStamped
 import time
 import threading
+
+from sensor_msgs.msg import MagneticField
+from whisker_interfaces.msg import MagneticFieldArray
 
 class WiskerDriverNode(Node):
     def __init__(self):
@@ -47,7 +49,7 @@ class WiskerDriverNode(Node):
         )
 
         self.magnetometer_reading_publisher = self.create_publisher(
-            MagneticField, "magnetometer_reading", 10
+            MagneticFieldArray, "magnetometer_reading", 10
         )
         self.buffer = deque(maxlen=1000)
         self.buffer_lock = Lock()
@@ -67,20 +69,20 @@ class WiskerDriverNode(Node):
         self.get_logger().info("serial_data_thread_function")
         while not self.serial_data_thread_shutdown:
             line = self.ser.readline().decode("utf-8")
-            self.get_logger().info("line" + line)
+            # self.get_logger().info("line" + line)
 
             stamp = time.time()
             match = self.pattern.search(line)
             if match is not None:
                 x, y, z = match.groups()
-                self.get_logger().info(f"{x} {y} {z}")
+                # self.get_logger().info(f"{x} {y} {z}")
                 msg = MagneticField()
-                msg.header.frame_id = "magnetometer"
+                # msg.header.frame_id = "magnetometer"
                 msg.header.stamp.sec = math.floor(stamp)
                 msg.header.stamp.nanosec = round(stamp % 1 * 1e9)
-                msg.magnetic_field.x = int(x)
-                msg.magnetic_field.y = int(y)
-                msg.magnetic_field.z = int(z)
+                msg.magnetic_field.x = float(int(x, 16))
+                msg.magnetic_field.y = float(int(y, 16))
+                msg.magnetic_field.z = float(int(z, 16))
                 with self.publish_queue_lock:
                     self.publish_queue.append(msg)
 
@@ -91,13 +93,15 @@ class WiskerDriverNode(Node):
         self.get_logger().info(f"classifier_callback {len(self.publish_queue)}")
 
         with self.publish_queue_lock:
-            while len(self.publish_queue) > 0:
-                msg = self.publish_queue.popleft()
-                self.magnetometer_reading_publisher.publish(msg)
+            mfa = MagneticFieldArray()
+            for mf in self.publish_queue:
+                mfa.magnetic_field_array.append(mf)
+            self.magnetometer_reading_publisher.publish(mfa)
+            self.publish_queue.clear()
 
-        buffer_copy = None
-        with self.buffer_lock:
-            buffer_copy = deepcopy(self.buffer)
+        # buffer_copy = None
+        # with self.buffer_lock:
+        #     buffer_copy = deepcopy(self.buffer)
         
         # d = self.classifier.update(buffer_copy)
 

@@ -30,12 +30,15 @@ class PrinterDriverNode(Node):
 
         self.declare_parameter(
             "location_polling_rate_hz",
-            10,
+            10.0,
         )
 
+        serial_device = self.get_parameter("serial_device").get_parameter_value().string_value
         self.controller = GcodeController(
-            self.get_parameter("serial_device").get_parameter_value().string_value
+            port = serial_device
         )
+        self.get_logger().info(f"Opening serial device: {serial_device}")
+        self.get_logger().info("prepare printer")
         # calibrate the printer head location
         self.controller.prepare()
 
@@ -52,9 +55,9 @@ class PrinterDriverNode(Node):
         tf.header.stamp = self.get_clock().now().to_msg()
         tf.header.frame_id = "printer_base_link"
         tf.child_frame_id = "whisker_base_link"
-        tf.transform.translation.x = 0
-        tf.transform.translation.y = 0
-        tf.transform.translation.z = 0
+        tf.transform.translation.x = 0.0
+        tf.transform.translation.y = 0.0
+        tf.transform.translation.z = 0.0
         q = quaternion_from_euler(0, 0, 0)
         tf.transform.rotation.x = q[0]
         tf.transform.rotation.y = q[1]
@@ -69,18 +72,18 @@ class PrinterDriverNode(Node):
         )
 
     def location_poll_timer_callback(self):
-        ps = PoseStamped()
-        ps.pose.position.x = self.controller.x
-        ps.pose.position.y = self.controller.y
-        ps.pose.position.z = self.controller.z
+        # ps = PoseStamped()
+        # ps.pose.position.x = float(self.controller.x)
+        # ps.pose.position.y = float(self.controller.y)
+        # ps.pose.position.z = float(self.controller.z)
 
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "printer_head_link"
         t.child_frame_id = "printer_base_link"  # defined as the origin of the printer
-        t.transform.translation.x = self.controller.x
-        t.transform.translation.y = self.controller.y
-        t.transform.translation.z = self.controller.z
+        t.transform.translation.x = float(self.controller.x)
+        t.transform.translation.y = float(self.controller.y)
+        t.transform.translation.z = float(self.controller.z)
         q = quaternion_from_euler(0, 0, 0)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]

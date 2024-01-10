@@ -26,15 +26,17 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-set(srv_files
+set(interface_files
   "srv/IncrementsBeamTest.srv"
+  "msg/MagneticFieldArray.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  ${srv_files}
-  DEPENDENCIES std_msgs
+  ${interface_files}
+  DEPENDENCIES std_msgs sensor_msgs
   ADD_LINTER_TESTS
 )
 

@@ -1,0 +1,1 @@
+sensor_msgs/MagneticField[] magnetic_field_array

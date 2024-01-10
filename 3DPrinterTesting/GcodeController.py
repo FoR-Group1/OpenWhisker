@@ -86,6 +86,7 @@ class GcodeController:
     def initialise_log_file(self):
         if not os.path.isfile(self.LOG_FILE) or os.path.getsize(self.LOG_FILE) == 0:
             # File does not exist or is empty, so write the header
+            os.makedirs(self.LOG_FOLDER, exist_ok=True)
 
             with open(self.LOG_FILE, mode="w", newline="") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
