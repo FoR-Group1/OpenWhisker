@@ -306,6 +306,7 @@ class GcodeController:
         self.send_gcode("G21:")  # setting the printer to mm
         self.send_gcode("G28 XY:")  # homing X and Y of the printer
         self.set_speed(self.printer_speed)
+        sleep(6)
         self.calibrated = True
 
     # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
