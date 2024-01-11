@@ -172,8 +172,14 @@ class GcodeController:
             print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
             deflect_y_pos += inc_dist_y
             sleep(3)
+
+        # move away from the beam before returning to start position
+        self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
+
+        # return to start position
         controller.send_message("Returning to start")
         controller.beam_test_prepare()
+
         controller.send_message("Increment test complete")
         sleep(5)
         controller.send_message("yo yo, what next?")
@@ -297,8 +303,8 @@ class GcodeController:
         """
         Calibrates X and Y axis on the 3D Printer
         """
-        self.send_gcode("G21:") # setting the printer to mm
-        self.send_gcode("G28 XY:") # homing X and Y of the printer
+        self.send_gcode("G21:")  # setting the printer to mm
+        self.send_gcode("G28 XY:")  # homing X and Y of the printer
         self.set_speed(self.printer_speed)
         self.calibrated = True
 
@@ -407,13 +413,19 @@ def print_to_stdout(*a):
         file.write("\n" + str(*a))
 
 
-def main(port = "/dev/ttyACM0"):
+def main(port="/dev/ttyACM0"):
     controller = GcodeController(port)
     controller.prepare()
-    controller.increments_beam_test(6, 15, 2, 2, 3)
+    controller.increments_beam_test(
+        total_x_distance=6,
+        total_y_distance=100,
+        increments_x=0,
+        increments_y=10,
+        pause_sec=0,
+    )
     print("complete")
+
 
 # Y91 tip of whisker with ruler
 if __name__ == "__main__":
     fire.Fire(main)
-
