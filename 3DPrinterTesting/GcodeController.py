@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import serial
 from typing import Final
 import threading
@@ -7,6 +9,7 @@ import re
 import os
 import queue
 import sys
+import fire
 
 
 class GcodeController:
@@ -395,10 +398,13 @@ def print_to_stdout(*a):
         file.write("\n" + str(*a))
 
 
+def main(port = "/dev/ttyACM0"):
+    controller = GcodeController(port)
+    controller.prepare()
+    controller.increments_beam_test(6, 15, 2, 2, 3)
+    print("complete")
+
 # Y91 tip of whisker with ruler
 if __name__ == "__main__":
-    gcode = GcodeController()
-    gcode.prepare()
-    controller.increment_beam_test(6, 15, 2, 2, 3)
+    fire.Fire(main)
 
-    print("complete")
