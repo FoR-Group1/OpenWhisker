@@ -157,10 +157,11 @@ class GcodeController:
         print_to_stdout("Begin increment test")
 
         deflect_y_pos = starting_y_pos
-        for _ in range(increments_y + 1):
+        for i in range(increments_y + 1):
             self.send_movement(x=self.WHISKER_X - self.X_PADDING)
             self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
             deflect_x_distance = inc_dist_x
+            print_to_stdout(f"running test {i}: y = {deflect_y_pos}")
             for _ in range(increments_x + 1):
                 print_to_stdout(self.data_for_std_out)
                 self.send_movement(
