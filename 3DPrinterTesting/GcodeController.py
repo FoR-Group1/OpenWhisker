@@ -9,7 +9,6 @@ import re
 import os
 import queue
 import sys
-import fire
 
 
 class GcodeController:
@@ -429,4 +428,5 @@ def main(port="/dev/ttyACM0"):
 
 # Y91 tip of whisker with ruler
 if __name__ == "__main__":
+    import fire
     fire.Fire(main)
