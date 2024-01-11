@@ -1,6 +1,7 @@
 import numpy as np
 import math
 
+
 # credit to https://gist.github.com/salmagro/2e698ad4fbf9dae40244769c5ab74434
 def euler_from_quaternion(quaternion):
     """

@@ -17,6 +17,7 @@ import threading
 from sensor_msgs.msg import MagneticField
 from whisker_interfaces.msg import MagneticFieldArray
 
+
 class WhiskerDriverNode(Node):
     def __init__(self):
         super().__init__("whisker_driver_node")
@@ -34,7 +35,9 @@ class WhiskerDriverNode(Node):
             10.0,
         )
 
-        serial_device = self.get_parameter("serial_device").get_parameter_value().string_value
+        serial_device = (
+            self.get_parameter("serial_device").get_parameter_value().string_value
+        )
         baud_rate = self.get_parameter("baud_rate").get_parameter_value().integer_value
         self.get_logger().info(f"Opening serial device: {serial_device} {baud_rate}")
         self.ser = serial.Serial(
@@ -44,9 +47,7 @@ class WhiskerDriverNode(Node):
         )
 
         # sensor data serial output regex
-        self.pattern = re.compile(
-            r"^\d\d([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{4})"
-        )
+        self.pattern = re.compile(r"^\d\d([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{4})")
 
         self.magnetometer_reading_publisher = self.create_publisher(
             MagneticFieldArray, "magnetometer_reading", 10
@@ -54,11 +55,18 @@ class WhiskerDriverNode(Node):
         self.buffer = deque(maxlen=1000)
         self.buffer_lock = Lock()
 
-        period = 1/self.get_parameter("classifier_rate_hz").get_parameter_value().double_value
+        period = (
+            1
+            / self.get_parameter("classifier_rate_hz")
+            .get_parameter_value()
+            .double_value
+        )
         self.classifier_timer = self.create_timer(period, self.classifier_callback)
         # self.classifier = Classifier()
 
-        self.serial_data_thread = threading.Thread(target=self.serial_data_thread_function)
+        self.serial_data_thread = threading.Thread(
+            target=self.serial_data_thread_function
+        )
         self.serial_data_thread.start()
         self.serial_data_thread_shutdown = False
 
@@ -102,11 +110,8 @@ class WhiskerDriverNode(Node):
         # buffer_copy = None
         # with self.buffer_lock:
         #     buffer_copy = deepcopy(self.buffer)
-        
+
         # d = self.classifier.update(buffer_copy)
-
-        
-
 
 
 def main(args=None):

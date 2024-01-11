@@ -20,6 +20,7 @@ from whisker_interfaces.srv import IncrementsBeamTest
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
+
 class PrinterDriverNode(Node):
     def __init__(self):
         super().__init__("printer_driver_node")
@@ -34,11 +35,11 @@ class PrinterDriverNode(Node):
             10.0,
         )
 
-        serial_device = self.get_parameter("serial_device").get_parameter_value().string_value
-        self.get_logger().info(f"Opening serial device: {serial_device}")
-        self.controller = GcodeController(
-            port = serial_device
+        serial_device = (
+            self.get_parameter("serial_device").get_parameter_value().string_value
         )
+        self.get_logger().info(f"Opening serial device: {serial_device}")
+        self.controller = GcodeController(port=serial_device)
         self.get_logger().info("Printer ready")
 
         self.location_poll_cbg = MutuallyExclusiveCallbackGroup()
