@@ -16,6 +16,10 @@ import threading
 
 from sensor_msgs.msg import MagneticField
 from whisker_interfaces.msg import MagneticFieldArray
+import pickle
+
+import numpy as np
+from scipy.signal import butter, filtfilt
 
 
 class WhiskerDriverNode(Node):
@@ -31,8 +35,13 @@ class WhiskerDriverNode(Node):
             115200,
         )
         self.declare_parameter(
-            "classifier_rate_hz",
+            "contact_detection_rate_hz",
             10.0,
+        )
+
+        self.declare_parameter(
+            "whisker_model_path",
+            "does/not/exist",
         )
 
         serial_device = (
@@ -57,12 +66,17 @@ class WhiskerDriverNode(Node):
 
         period = (
             1
-            / self.get_parameter("classifier_rate_hz")
+            / self.get_parameter("contact_detection_rate_hz")
             .get_parameter_value()
             .double_value
         )
-        self.classifier_timer = self.create_timer(period, self.classifier_callback)
-        # self.classifier = Classifier()
+        self.contact_detector_timer = self.create_timer(
+            period, self.contact_detector_callback
+        )
+
+        self.contact_detection_publisher = self.create_publisher(
+            PoseStamped, "detected_contact", 10
+        )
 
         self.serial_data_thread = threading.Thread(
             target=self.serial_data_thread_function
@@ -72,6 +86,33 @@ class WhiskerDriverNode(Node):
 
         self.publish_queue = deque(maxlen=1000)
         self.publish_queue_lock = Lock()
+
+        self.params = []
+        with open(
+            self.get_parameter("whisker_model_path").get_parameter_value().string_value,
+            "rb",
+        ) as fd:
+            self.params = pickle.load(fd)
+
+        # de-noise filter params
+        cutoff = 2  # desired cutoff frequency of the filter, Hz
+        fs = 850  # sample rate, Hz
+        order = 2  # quadratic
+        nyq = 0.5 * fs  # Nyquist Frequency
+        normal_cutoff = cutoff / nyq
+        # Get the filter coefficients of a low pass filter
+        b, a = butter(order, normal_cutoff, btype="low", analog=False)
+        self.filter_params = [b, a]
+
+        self.SHAFT_LENGTH = 150
+
+    def whisker_model(self, x):
+        return (
+            self.params[0] * (x**3)
+            + self.params[1] * (x**2)
+            + self.params[2] * x
+            + self.params[3]
+        )
 
     def serial_data_thread_function(self):
         self.get_logger().info("serial_data_thread_function")
@@ -97,9 +138,13 @@ class WhiskerDriverNode(Node):
                 with self.buffer_lock:
                     self.buffer.append(msg)
 
-    def classifier_callback(self):
-        self.get_logger().info(f"classifier_callback {len(self.publish_queue)}")
+    def butter_lowpass_filter(self, data):
+        return filtfilt(self.filter_params[0], self.filter_params[1], data)
 
+    def contact_detector_callback(self):
+        self.get_logger().info(f"contact_detector_callback {len(self.publish_queue)}")
+
+        # publish raw magnetometer readings
         with self.publish_queue_lock:
             mfa = MagneticFieldArray()
             for mf in self.publish_queue:
@@ -107,11 +152,77 @@ class WhiskerDriverNode(Node):
             self.magnetometer_reading_publisher.publish(mfa)
             self.publish_queue.clear()
 
-        # buffer_copy = None
-        # with self.buffer_lock:
-        #     buffer_copy = deepcopy(self.buffer)
+        buffer_copy = None
+        with self.buffer_lock:
+            buffer_copy = deepcopy(self.buffer)
 
-        # d = self.classifier.update(buffer_copy)
+        if len(buffer_copy) > 200:
+            t_data = [
+                msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+                for msg in buffer_copy
+            ]
+
+            # de-noise
+            y_filtered = self.butter_lowpass_filter(
+                [msg.magnetic_field.y for msg in buffer_copy]
+            )
+
+            # calculate first derivative
+            y_grad = np.gradient(y_filtered)
+
+            # find an episode in the data where there is a rising edge followed by a falling edge
+            episodes = []
+            open_episode = True
+            episode_start = 0
+            steady_state = False
+            for idx, pt in enumerate(y_grad):
+                # first detect a steady state
+                if idx > 5 and np.abs(np.average(y_grad[idx - 5 : idx])) < 5:
+                    steady_state = True
+
+                # then detect a large change from steady state
+                if steady_state:
+                    if open_episode:
+                        if pt < -10:
+                            # found start of episode
+                            open_episode = False
+                            steady_state = False
+                            episode_start = t_data[idx]
+                        else:
+                            continue
+                    else:
+                        if pt > 10:
+                            # found end of episode
+                            open_episode = True
+                            episodes.append((episode_start, t_data[idx]))
+                            break
+                        else:
+                            continue
+
+            if len(episodes) > 0:
+                start, end = episodes[0]
+                self.get_logger().info(f"contact detected {start} {end}")
+                # Find the max gradient within the episode
+                episode_grad_data = [
+                    (grad, t)
+                    for grad, t in zip(y_grad, t_data)
+                    if t >= start and t <= end
+                ]
+                min_index = np.argmin([grad for grad, t in episode_grad_data])
+                min_grad, min_grad_t = episode_grad_data[min_index]
+
+                shaft_distance_from_tip = self.whisker_model(min_grad)
+
+                # publish contact detection
+                msg = PoseStamped()
+                msg.header.frame_id = "whisker_base_link"
+                msg.header.stamp.sec = math.floor(min_grad_t)
+                msg.header.stamp.nanosec = round(min_grad_t % 1 * 1e9)
+                msg.pose.position.x = 0.0
+                msg.pose.position.y = self.SHAFT_LENGTH - shaft_distance_from_tip
+                msg.pose.position.z = 0.0
+
+                self.contact_detection_publisher.publish(msg)
 
 
 def main(args=None):
