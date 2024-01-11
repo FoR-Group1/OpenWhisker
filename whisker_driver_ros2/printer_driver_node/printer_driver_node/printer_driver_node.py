@@ -35,13 +35,11 @@ class PrinterDriverNode(Node):
         )
 
         serial_device = self.get_parameter("serial_device").get_parameter_value().string_value
+        self.get_logger().info(f"Opening serial device: {serial_device}")
         self.controller = GcodeController(
             port = serial_device
         )
-        self.get_logger().info(f"Opening serial device: {serial_device}")
-        self.get_logger().info("prepare printer")
-        # calibrate the printer head location
-        self.controller.prepare()
+        self.get_logger().info("Printer ready")
 
         self.location_poll_cbg = MutuallyExclusiveCallbackGroup()
         self.location_poll_timer = self.create_timer(
