@@ -171,7 +171,6 @@ class GcodeController:
 
             print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
             deflect_y_pos += inc_dist_y
-            sleep(3)
 
         # move away from the beam before returning to start position
         self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
