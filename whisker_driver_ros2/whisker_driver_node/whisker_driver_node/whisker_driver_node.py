@@ -17,9 +17,9 @@ import threading
 from sensor_msgs.msg import MagneticField
 from whisker_interfaces.msg import MagneticFieldArray
 
-class WiskerDriverNode(Node):
+class WhiskerDriverNode(Node):
     def __init__(self):
-        super().__init__("wisker_driver_node")
+        super().__init__("whisker_driver_node")
 
         self.declare_parameter(
             "serial_device",
@@ -111,11 +111,11 @@ class WiskerDriverNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    waypoints_mission_node = WiskerDriverNode()
-    rclpy.spin(waypoints_mission_node)
-    waypoints_mission_node.serial_data_thread_shutdown = True
-    waypoints_mission_node.serial_data_thread.join()
-    waypoints_mission_node.destroy_node()
+    whisker_driver_node = WhiskerDriverNode()
+    rclpy.spin(whisker_driver_node)
+    whisker_driver_node.serial_data_thread_shutdown = True
+    whisker_driver_node.serial_data_thread.join()
+    whisker_driver_node.destroy_node()
     rclpy.shutdown()
 
 
