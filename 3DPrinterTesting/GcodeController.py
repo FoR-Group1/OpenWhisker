@@ -127,7 +127,7 @@ class GcodeController:
 
     def beam_test_prepare(self) -> None:
         self.send_movement(
-            x=self.beam_from_whisker_tip_x - 5,
+            x=self.beam_from_whisker_tip_x - 10,
             y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
         )
 
