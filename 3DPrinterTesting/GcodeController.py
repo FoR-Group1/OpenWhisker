@@ -87,7 +87,7 @@ class GcodeController:
         sleep(10)
 
         # begin collection position information
-        self.position_thread = threading.Thread(target=self.get_position_loop).start()
+        # self.position_thread = threading.Thread(target=self.get_position_loop).start()
 
         # always do a reset on initialisation
         self.prepare()
@@ -111,6 +111,14 @@ class GcodeController:
                 writeable_data = self.gcode_parser()
                 if writeable_data:
                     writer.writerow(self.log_data)
+
+    def update_position(self) -> None:
+        """
+        Method to update the current position of the print head
+        """
+        print_to_stdout("update_position")
+        self.send_gcode("M114:")
+        self.read_and_store_serial()
 
     def get_position_loop(self) -> None:
         """
@@ -286,9 +294,19 @@ class GcodeController:
             self.send_message("Please run prepare()")
 
         gcode = self.gcode(x, y, z, f)
-        while not self.at_goal:
-            sleep(1)
         self.send_gcode(gcode)
+
+        done = False
+        while not done:
+            self.update_position()
+            done = self.at_goal
+
+            if done:
+                break
+            print_to_stdout(
+                f"waiting for goal {x}, {y}, {z}, current {self.x}, {self.y}, {self.z}"
+            )
+            sleep(0.05)
 
     def send_wait(self, m_sec) -> None:
         """this sucks, don't use it"""
@@ -421,7 +439,7 @@ def main(port="/dev/ttyACM0"):
         total_y_distance=100,
         increments_x=0,
         increments_y=10,
-        pause_sec=0,
+        pause_sec=1,
     )
     print("complete")
 
