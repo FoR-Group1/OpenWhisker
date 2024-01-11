@@ -83,8 +83,17 @@ class GcodeController:
 
         # initialise pritner configurations
         self.initialise_log_file()  # create log file if empty
+
+        # Wait for printer to be ready
+        sleep(10)
+
         # begin collection position information
         self.position_thread = threading.Thread(target=self.get_position_loop).start()
+
+        # always do a reset on initialisation
+        self.prepare()
+
+        print_to_stdout("-- 3D Printer connection established --")
 
     def initialise_log_file(self):
         if not os.path.isfile(self.LOG_FILE) or os.path.getsize(self.LOG_FILE) == 0:
