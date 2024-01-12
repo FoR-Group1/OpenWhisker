@@ -1,0 +1,9 @@
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is 'ros_integration.blg'
+[38] biber-darwin:340> INFO - === Fri Jan 12, 2024, 09:39:32
+[48] Biber.pm:419> INFO - Reading 'ros_integration.bcf'
+[93] Biber.pm:979> INFO - Found 0 citekeys in bib section 0
+[100] bbl.pm:660> INFO - Writing 'ros_integration.bbl' with encoding 'UTF-8'
+[100] bbl.pm:763> INFO - Output to ros_integration.bbl
+[101] Biber.pm:131> WARN - The file 'ros_integration.bcf' does not contain any citations!
+[101] Biber.pm:133> INFO - WARNINGS: 1

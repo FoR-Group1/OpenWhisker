@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{ros_integration.bib} %Import the bibliography file
+\usepackage[colorlinks,citecolor=black,urlcolor=black,bookmarks=false,hypertexnames=true]{hyperref} 
+
+\title{OpenWhisker - A Open Source Whisker Sensor Platform}
+\author{Liyou Zhou}
+\date{Jan 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{ROS integration}
+
+A driver is written to integrate the sensor and the calibration process, including the 3d printer into ROS 2.
+The driver has the following main components:
+
+\begin{itemize}
+    \item \textbf{whisker\_driver\_node} Interfaces with the whisker sensor micro-controller via a serial port.
+Publishes data on the topic \verb|/magnetometer_reading|.
+    \item  \textbf{printer\_driver\_node} Interfaces with the 3d printer, drive it to go through a calibration sequence
+upon a service call.
+    \item \textbf{whisker\_interfaces} Message and service definitions for the drivers.
+\end{itemize}
+
+\section{Whisker Model}
+
+In order to make the sensor useful in SLAM tasks, it is necessary not  only to sense when contact happens, but also estimate the exact location along the whisker where contact is made. As such, we need to establish a relationship between the sensor readings and the location of the contact.
+
+\subsection{Calibration Routine}
+
+Using the ROS 2 \textbf{printer\_driver\_node}, the printer is instructed to make contact with the whisker shaft at a series of known locations. The contact is made in a swift back and forth motion to mimic whisking action.
+
+Reading from the sensor as well as the x, y, z position of the printer head is easily recorded via the ROS 2 \textbf{rosbag} utility.
+
+\subsection{Calibration Data Analysis}
+
+\subsection{Whisker Model}
+
+The relationship between the sensor reading and the location of the contact is modelled using a polynomial function.
+
+Assume the direction along the shaft is \(x\) and the displacement orthogonal to the shaft is \(y\).
+
+\end{document}
