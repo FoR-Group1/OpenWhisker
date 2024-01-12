@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import serial
 from typing import Final
 import threading
@@ -80,12 +82,22 @@ class GcodeController:
 
         # initialise pritner configurations
         self.initialise_log_file()  # create log file if empty
+
+        # Wait for printer to be ready
+        sleep(10)
+
         # begin collection position information
-        self.position_thread = threading.Thread(target=self.get_position_loop).start()
+        # self.position_thread = threading.Thread(target=self.get_position_loop).start()
+
+        # always do a reset on initialisation
+        self.prepare()
+
+        print_to_stdout("-- 3D Printer connection established --")
 
     def initialise_log_file(self):
         if not os.path.isfile(self.LOG_FILE) or os.path.getsize(self.LOG_FILE) == 0:
             # File does not exist or is empty, so write the header
+            os.makedirs(self.LOG_FOLDER, exist_ok=True)
 
             with open(self.LOG_FILE, mode="w", newline="") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
@@ -99,6 +111,14 @@ class GcodeController:
                 writeable_data = self.gcode_parser()
                 if writeable_data:
                     writer.writerow(self.log_data)
+
+    def update_position(self) -> None:
+        """
+        Method to update the current position of the print head
+        """
+        print_to_stdout("update_position")
+        self.send_gcode("M114:")
+        self.read_and_store_serial()
 
     def get_position_loop(self) -> None:
         """
@@ -114,7 +134,7 @@ class GcodeController:
 
     def beam_test_prepare(self) -> None:
         self.send_movement(
-            x=self.beam_from_whisker_tip_x - 5,
+            x=self.beam_from_whisker_tip_x - 10,
             y=self.WHISKER_TIP_Y + self.BEAM_EDGE_Y_RELATIVE_TO_NOZZLE + 5,
         )
 
@@ -144,10 +164,11 @@ class GcodeController:
         print_to_stdout("Begin increment test")
 
         deflect_y_pos = starting_y_pos
-        for _ in range(increments_y + 1):
+        for i in range(increments_y + 1):
             self.send_movement(x=self.WHISKER_X - self.X_PADDING)
             self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
             deflect_x_distance = inc_dist_x
+            print_to_stdout(f"running test {i}: y = {deflect_y_pos}")
             for _ in range(increments_x + 1):
                 print_to_stdout(self.data_for_std_out)
                 self.send_movement(
@@ -158,9 +179,14 @@ class GcodeController:
 
             print_to_stdout(f"Maximum deflection:{self.data_for_std_out}")
             deflect_y_pos += inc_dist_y
-            sleep(3)
+
+        # move away from the beam before returning to start position
+        self.send_movement(x=self.WHISKER_X - self.X_PADDING, y=deflect_y_pos)
+
+        # return to start position
         controller.send_message("Returning to start")
         controller.beam_test_prepare()
+
         controller.send_message("Increment test complete")
         sleep(5)
         controller.send_message("yo yo, what next?")
@@ -268,9 +294,19 @@ class GcodeController:
             self.send_message("Please run prepare()")
 
         gcode = self.gcode(x, y, z, f)
-        while not self.at_goal:
-            sleep(1)
         self.send_gcode(gcode)
+
+        done = False
+        while not done:
+            self.update_position()
+            done = self.at_goal
+
+            if done:
+                break
+            print_to_stdout(
+                f"waiting for goal {x}, {y}, {z}, current {self.x}, {self.y}, {self.z}"
+            )
+            sleep(0.05)
 
     def send_wait(self, m_sec) -> None:
         """this sucks, don't use it"""
@@ -284,9 +320,10 @@ class GcodeController:
         """
         Calibrates X and Y axis on the 3D Printer
         """
-        self.send_gcode("G21:") # setting the printer to mm
-        self.send_gcode("G28 XY:") # homing X and Y of the printer
+        self.send_gcode("G21:")  # setting the printer to mm
+        self.send_gcode("G28 XY:")  # homing X and Y of the printer
         self.set_speed(self.printer_speed)
+        sleep(6)
         self.calibrated = True
 
     # def progressive_gcode_move(self, x=None, y=None, z=None, f=None) -> str:
@@ -394,10 +431,20 @@ def print_to_stdout(*a):
         file.write("\n" + str(*a))
 
 
+def main(port="/dev/ttyACM0"):
+    controller = GcodeController(port)
+    controller.prepare()
+    controller.increments_beam_test(
+        total_x_distance=6,
+        total_y_distance=100,
+        increments_x=0,
+        increments_y=10,
+        pause_sec=1,
+    )
+    print("complete")
+
+
 # Y91 tip of whisker with ruler
 if __name__ == "__main__":
-    gcode = GcodeController()
-    gcode.prepare()
-    controller.increment_beam_test(6, 15, 2, 2, 3)
-
-    print("complete")
+    import fire
+    fire.Fire(main)
