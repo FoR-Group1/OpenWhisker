@@ -39,8 +39,22 @@ Reading from the sensor as well as the x, y, z position of the printer head is e
 
 \subsection{Whisker Model}
 
-The relationship between the sensor reading and the location of the contact is modelled using a polynomial function.
+The relationship between the sensor reading and the location of the contact is modelled using a third order polynomial function. The coefficients of the polynomial are determined using a least square fit.
+
+
 
 Assume the direction along the shaft is \(x\) and the displacement orthogonal to the shaft is \(y\).
+The magnitude of the sensor reading is proportional to the displacement at the base of the whisker.
+    \[D_{base} = \alpha |M| \]
+The displacement at the contact point has 2 components,
+\begin{itemize}
+    \item displacement due to twisting of the gel material \(D_{twist}\).
+    \item displacement due to bending of the whisker shaft \(D_{bend}\).
+\end{itemize}
+    \[D_{contact} = D_{twist} + D_{bend}\]
+    \[D_{contact} = \beta D_{base} + D_{bend}\]
+    \[D_{contact} = \gamma |M| + D_{bend}\]
+
+Because the whisker shaft is tapered, the 
 
 \end{document}
