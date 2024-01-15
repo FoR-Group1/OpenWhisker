@@ -3,7 +3,7 @@
 \usepackage{graphicx} % Required for inserting images
 \usepackage{biblatex} %Imports biblatex package
 \addbibresource{Whiskers.bib} %Import the bibliography file
-\usepackage[colorlinks,citecolor=black,urlcolor=black,bookmarks=false,hypertexnames=true]{hyperref}
+\usepackage[colorlinks,linkcolor = black, citecolor=black,urlcolor=black,bookmarks=false,hypertexnames=true]{hyperref}
 
 \usepackage{blindtext}
 
@@ -86,7 +86,7 @@ All artifacts of the solution can be viewed at:
 
 \url{https://github.com/FoR-Group1/OpenWhisker}.
 
-And a report detailing more details of the project can be found at the end of this document.
+A project summary document is attached in Appendix for completeness.
 
 \vspace{20px}
 
@@ -165,7 +165,7 @@ The raw magnetometer readings are noisy, hence as a first step, a low pass Butte
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/filtered_magnetometer.png}
+    \includegraphics[width=0.9\textwidth]{figures/filtered_magnetometer.png}
     \caption{Raw and Filtered Magnetometer Reading in the X Axis }
     \label{fig:filtered_magnetometer}
 \end{figure}
@@ -174,7 +174,7 @@ In the next step, each episode of contact is isolated and extracted from the tim
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/episodes_y_data.png}
+    \includegraphics[width=0.9\textwidth]{figures/episodes_y_data.png}
     \caption{Isolated Contact Episodes. x axis is time in seconds, y axis is the magnetometer reading in the y channel}
     \label{fig:episodes_y_data.png}
 \end{figure}
@@ -187,7 +187,7 @@ To correct for this effect, we scale the derivative of senor reading by a factor
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/corrected_derivative.png}
+    \includegraphics[width=0.9\textwidth]{figures/corrected_derivative.png}
     \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the color corresponds to the distance from the base of the whisker \(x\) where contact is made}
     \label{fig:corrected_derivative.png}
 \end{figure}
@@ -202,7 +202,7 @@ While \(y_{twist}\) creates a directly proportional reading at the magnetometer 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/x_y_relationship.png}
+    \includegraphics[width=0.9\textwidth]{figures/x_y_relationship.png}
     \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The color corresponds to the value of N}
     \label{fig:x_y_relationship.png}
 \end{figure}
@@ -212,7 +212,7 @@ Picking the 120th sample in each episode, this relationship between \(x\) and \(
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/polynomial_regression.png}
+    \includegraphics[width=0.9\textwidth]{figures/polynomial_regression.png}
     \caption{Polynomial Regression of the relationship 100th sample of \(\dot{y}\) in each episode and the contact distance \(x\)}
     \label{fig:polynomial_regression.png}
 \end{figure}
@@ -225,7 +225,7 @@ All the above analysis is done using a whisker shaft printed in PLA and is taper
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{figures/pteg_episodes.png}
+    \includegraphics[width=0.9\textwidth]{figures/pteg_episodes.png}
     \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the color corresponds to the distance from the base of the whisker \(x\) where contact is made}
     \label{fig:pteg_episodes.png}
 \end{figure}
@@ -259,7 +259,7 @@ Hence the flexibility of the whisker shaft is crucial to the successful operatio
 
 \section{Conclusion}
 
-As a result of the project, a fully re-producible cost effective whisker sensor platform is developed and made available via open source software and hardware. The sensor itself uses off-the-shelf or 3d printed components. We avoids harmful chemicals in choosing to produce the flexible hinge using 3d printing as TPU. The utilization of a 3d printer as a calibration rig reduces the cost of the calibration process and makes it accessible to a wider audience. The integration with ROS 2 provides a convenient interface for data collection and analysis. The ability to estimate the radial location of contact in real time makes the sensor useful in SLAM tasks. There is huge potential in further development based on the project's work and we hope to see more people joining the effort.
+As a result of the project, a fully re-producible cost effective whisker sensor platform is developed and made available via open source software and hardware. The sensor itself uses off-the-shelf or 3d printed components. We avoids harmful chemicals in choosing to produce the flexible hinge using 3d printing with TPU. The utilization of a 3d printer as a calibration rig reduces the cost of the calibration process and makes it accessible to a wider audience. The integration with ROS 2 provides a convenient interface for data collection and analysis. The ability to estimate the radial location of contact in real time makes the sensor useful in SLAM tasks. There is huge potential in further development based on the project's work and we hope to see more people joining the effort.
 
 
 \printbibliography
