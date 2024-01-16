@@ -44,7 +44,15 @@
 \maketitle
 \tableofcontents
 
-\chapter{OpenWhisker - A Open Source Whisker Sensor Platform}
+\chapter{Question 1}
+
+Describe your own individual work on creating an open source robot whisker system, including equations
+from the module theory and numerical results testing if theory and practice match. Reflect on your work with
+a team including how you lead work by helping others and what you would do differently next time having
+learned from the project. For technical details of the work, you may refer to a jointly written but non-assessed
+technical report written as a team, submitted as supplemental information.
+
+\section{OpenWhisker - A Open Source Whisker Sensor Platform}
 
 \section{Introduction}
 
@@ -82,16 +90,16 @@ A 3d printer is repurposed to be an automated calibration rig for the sensor (Fi
 
 The data is used to calibrate a regression model between the sensor reading and the radial location of the contact. The model is loaded into the whisker sensor ROS2 driver to provide real time radial contact location estimation.
 
+\vspace{20px}
+
+\mynote{
 All artifacts of the solution can be viewed at:
 
 \url{https://github.com/FoR-Group1/OpenWhisker}.
 
 A project summary document is attached in Appendix for completeness.
 
-\vspace{20px}
-
-\mynote{
-The following sections will disscuss my personal contribution to the project.
+The following sections will discuss my personal contribution to the project.
 }
 
 \section{ROS integration}
@@ -172,9 +180,9 @@ The raw magnetometer readings are noisy, hence as a first step, a low pass Butte
 
 In the next step, each episode of contact is isolated and extracted from the time series. It is done by detecting a negative speed at the start of contact and a positive speed at the end of the episode in the y direction of the magnetometer readings. The isolated episodes are shown in Fig.~\ref{fig:episodes_y_data.png}. The data contains only the forward whisk. In an realistic whisking scenario, there is uncertainty as to how far along the whisk a contact is made and a detection algorithm should be able to detect contact with as little data as possible to minimize latency.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/episodes_y_data.png}
+    \includegraphics[width=0.6\textwidth]{figures/episodes_y_data.png}
     \caption{Isolated Contact Episodes. x axis is time in seconds, y axis is the magnetometer reading in the y channel}
     \label{fig:episodes_y_data.png}
 \end{figure}
@@ -261,6 +269,229 @@ Hence the flexibility of the whisker shaft is crucial to the successful operatio
 
 As a result of the project, a fully re-producible cost effective whisker sensor platform is developed and made available via open source software and hardware. The sensor itself uses off-the-shelf or 3d printed components. We avoids harmful chemicals in choosing to produce the flexible hinge using 3d printing with TPU. The utilization of a 3d printer as a calibration rig reduces the cost of the calibration process and makes it accessible to a wider audience. The integration with ROS 2 provides a convenient interface for data collection and analysis. The ability to estimate the radial location of contact in real time makes the sensor useful in SLAM tasks. There is huge potential in further development based on the project's work and we hope to see more people joining the effort.
 
+\section{Reflection}
+
+While I focused on ROS integration and data analysis for my individual work. I was actively involved in all aspects of the project. I participated in team discussions and decision making which lead to the choices in our final design. The ROS integration is then used to acquire data for analysis for all team member for their own particular focus including material characterization and contact point inference. I also helped other team members with their work by providing technical support and advice. I also contributed significantly in the documentation and open sourcing of the project.
+
+If I were to carry out the project again, I would leave more time for experimentation with the 3d printer calibration rig. There are a lot of parameters that can be tuned by running repeatable experiments with the calibration rig. Parameters such as the distance of the magnet from the hall effect sensor, the length/stiffness of the whisker, the speed of whisking are all interesting design dimensions to be explored. It would also be very interesting to instrument the printer to drag a material across the whisker sensor. This would allow us to explore the effect whisker sensor design in the application of material/defect detection.
+
+I would like to thank my team members for their hard work and dedication to the project. This is very much a collaborative effort. I would also like to thank the teaching staff for their guidance and support throughout the project.
+
+\chapter{Question 2}
+
+\begin{itemize}
+    \item (a) Explain why relying only on wheel odometry is not recommended to localise a mobile robot. Explain how
+    an inertial navigation system can improve the dead reckoning of a mobile robot.
+
+    \item (b) Consider you are designing a quadcopter and tasked to implement an altitude controller for the copter while
+    operating indoors. List the main functional components of this control system. Which controller would you
+    select for this application? Explain the rationale behind selecting this controller for this application. Explain
+this control algorithm using pseudo-code.
+\end{itemize}
+
+\section{(a)}
+
+\subsection{Why relying only on wheel odometry is not recommended}
+
+Relying on only wheel odometry for localisation is sub-optimal for the following reasons:
+
+\paragraph*{Inaccurate wheel sensors}
+
+To measure how far a wheel has turned a rotary encoder is usually used. Fig. \ref*{fig:rotary_encoder} shows the operating principle of a typical encoder. Slits are cut into a circular disk and a light source and a light sensor is placed on either side of the disk. As the disk rotates, the sensor detects the light intensity signal changes periodically. The number of slits on the disk is known and the distance between the slits is known. Hence the distance the wheel has turned can be calculated by counting the number of periods that the light sensor has detected. More advanced encoder also encode absolute position of the wheel by making each slits slightly different width. Then the absolute position of the wheel can be calculated by measuring the width of the period of the signal.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/Analog_rotary-encoder_Pt1-opener.jpg}
+    \caption{Image of Rotary Encoder, Source \cite{schweberRotaryEncoderBasics2018}}
+    \label{fig:rotary_encoder}
+\end{figure}
+
+The accuracy of the encoder is dictated by the number of slits on the disk and the frequency of the light sensor. Small error in encoding could accumulate over time and causes large inaccuracies in the estimated position of the robot.
+
+Depending also the material of the wheel, it may vary in shape from a perfect circle, future introducing errors in estimation.
+
+\paragraph*{Inaccurate motion model}
+
+For car-like robots, where there are 4 wheels and only the front wheels steer by turning, the motion model used is usually the bicycle model where the vehicle is simplified to 2 wheels (Fig. \ref*{fig:bicycle_model}). This model assumes that the robot is a rigid body, the wheels turn and roll in a perfect planer motion. In reality, the inside wheel turn differently from the outside wheel, the robot body articulates and flexes, and wheels all have camber and toe-in. All these factors introduce errors in the motion model and hence the estimated position of the robot.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/bicycle_annotated.png}
+    \caption{Bicycle Model, Source \cite{BicycleVehicleModel}}
+    \label{fig:bicycle_model}
+\end{figure}
+
+\paragraph*{wheel slippage}
+
+Most wheel odometry algorithms assume that the wheel is rolling on the ground without slipping. In reality, the wheel does not make perfect contact with the ground and have small slippage all the time. In the case of car-like drive mechanism, small differences in inside and outside wheel could cause large errors in heading estimation.
+
+\subsection{How an inertial navigation system can improve the dead reckoning}
+
+A inertial navigation system leverages accelerometer and gyroscope to estimate the speed, acceleration and pose of the robot. These sensors measure this physical properties directly and does not suffer from short-comings mentioned above. However, the sensors still have limited accuracy and are still prone to drift over time. Hence it is common to fuse the data from the inertial navigation system with other sensors such as wheel odometry and GPS to improve the accuracy of the estimation.
+
+The most common sensor fusion algorithm is Kalman Filtering. A kalman filter models the state of the robot system as well as sensor readings as gaussian. The centroid of the gaussian is the most likely state while the spread of the gaussian models the uncertainty.
+
+During operation, the filter first uses the motion model to predict the state of the robot at the next time step. This usually decreases the certainty we have about the state estimate. When a sensor reading comes in, the filter uses the measurement model to update the state from new sensor reading. This usually increases the certainty of the state estimation. By using different measurement models, the filter can integrate different sensor sources such as INS and wheel odometry. The uncertainty obtained of the estimate is usually much lower than the using individual sensors alone.
+
+In the case where the motion model or measurement model is not linear, techniques such as Extended Kalman Filter or Uncented Kalman Filter are developed to linearize the model and apply the same algorithm.
+
+\section{(b)}
+
+\subsection{Components of an altitude control system}
+
+The main components of an altitude control system are:
+
+\begin{itemize}
+    \item Altitude sensor. In indoor environment the range of the sensor need to be not to large ~10m. This is little bit too large for ultrasonic sensors which have usual range of a few meters and have limited frequency and accuracy. Hence a laser range sensor is more suitable. Operating on the same Time of Flight principle it measures the time it takes for a laser pulse to travel to the target and back. The accuracy is much higher and the range is much longer. The downside is that it is more expensive.
+    \item Actuators. In a quadcopter, the main actuators are the 4 motors. The altitude control system needs to be able to control the speed of the motors to be able to move the copter in the vertical direction.
+    \item Real-time controller. A controller need to take readings from the altitude sensor and actuate the motors accordingly to maintain the desired altitude. This need to be run in a very fast feedback look to ensure stability and avoid runaway.
+\end{itemize}
+
+\subsection{The Control Algorithm}
+
+The algorithm I would select is a PID controller (Fig. \ref*{fig:pid_controller}). On each loop of the controller, the error between the desired altitude and the current altitude is calculated. The PID controller then calculates the 3 main components of the control signal:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/pid_controller.png}
+    \caption{PID Controller, Source \cite{levidoPIDControl2022}}
+    \label{fig:pid_controller}
+\end{figure}
+
+\begin{itemize}
+    \item Proportional component. This term is proportional to the error causing the motors to output large power when error is large and small power when error is small. But it will cause the motor to have zero power when we are exactly at the desired altitude. This will cause the copter to fall. Hence the I, D components are needed.
+    \item Integral component. This term is proportional to the integral of the error. A pure proportional controller will cause the copter to hover just off of the desired altitude where the error is not zero, but the motor output exactly balances gravity. In that case, this small error will accumulate over time in the integral term, increasing the motor power and moving the copter towards exactly the desired altitude.
+    \item Derivative component. This term is proportional to the derivative of the error. A PI controller sometimes causes the copter to oscillate around the desired altitude. If the error term keeps growing, this could cause runaway.Hence the derivative term is needed to dampen the oscillation or any overshoot.
+\end{itemize}
+
+
+
+The final control signal is the sum of the 3 components and controls the power of the motors directly. The coefficients of the 3 components can be tuned to suit physical characteristics of the copter.
+
+The following is pseudo code of the control algorithm:
+
+\begin{verbatim}
+    integral = 0
+    previous_error = 0
+    // coefficients of the 3 components
+    // can be tuned to desired effect
+    Kp, Ki, Kd = .3, .1, .5
+    While True:
+        // desired altitude is set by user
+        desired_altitude = get_desired_altitude()
+        // get current altitude from sensor
+        current_altitude = read_laser_ranger()
+
+        // get the control error and
+        // calculate the ID terms
+        error = desired_altitude - current_altitude
+        integral = integral + error
+        derivative = error - previous_error
+
+        // calculate the final control signal
+        output = Kp * error + Ki * integral + Kd * derivative
+        previous_error = error
+
+        // driver the motors to output power
+        // according to the control signal
+        drive_motors(output)
+\end{verbatim}
+
+Generally, the faster the loop runs, the more stable the system as it is able to quickly react to changes in altitude. But the frequency of the sensor, the delay in motor control and the speed on on-board compute all limit the maximum frequency of the loop.
+
+\chapter{Question 3}
+
+\begin{itemize}
+    \item (a) Appreciate the use of a map of the environment while working with an autonomous mobile robot. Discuss
+    any one of the commonly used map representations in mobile robotics.
+    \item (b) With the help of pseudo code, describe a frontier-based algorithm for the exploration of an unknown
+    environment using an autonomous mobile robot.
+    \item (c) Assume a mobile robot is mapping an indoor environment shown in Figure 1 (a). The objects in the
+    environment are labelled in the figure. The sensing range of the robot is shown in Figure 1 (b). The
+    environment is discretised into a grid of size 8 × 8, with each cell labelled as Cell(x,y), where x and y represent
+    the column and row numbers of the cell. Assume the robot can move to any of the 8 neighbouring cells
+    around it in a single movement, if that cell is unoccupied. Describe how the algorithm you described in sub
+    question (b) will progress while the robot maps the full environment, starting from the given initial position.
+\end{itemize}
+
+\section{(a)}
+
+Maps are used in mobile robotics to give sematic meaning to the space around the robot. It can be tagged with different useful information for the localization, navigation or mission planning of the robot. Most commonly map marks where the obstacles are and allow robot to plan a obstacle-free path to reach a goal location. However it can also mark things like different road surface zones, charging station locations, salient visual features etc all in aid of the robot's specific mission.
+
+Most common map used is a 2d occupancy grid. It splits the physical space around the robot into a regular grid. Each cell is either occupied or vacant. Or in more sophisticated implementation, each cell is assigned a probability of being occupied. Starting form a blank grid, as the robot moves around and detects obstacles in the environment, the corresponding cells in the grid are marked as occupied. Once the environment is fully explored, the map can be used for path planning and navigation. Common path planning algorithms include Dijkstra’s and A*.
+
+\section{(b)}
+
+A frontier algorithm follows this basic workflow:
+
+\begin{enumerate}
+    \item Prepare a list of all frontiers
+    \item Go to closest frontier cell
+    \item Observe neighbouring cells
+    \item Update frontier list
+    \item Repeat 2, 3 and 4, Stop when all frontiers are visited
+\end{enumerate}
+
+A basic algorithm pseudo code is shown below, comments inline should guide you through the algorithm which corresponds to the steps above.
+
+
+\begin{verbatim}
+    // array to store the map
+    float[width][height] map = {-1} // initalized to -1
+    // array to store the frontier cells in [x, y] format
+    float[][2] frontiers
+    // robot location [x, y]
+    float[2] robot
+
+    // main loop
+    while true:
+        frontiers = []
+        // for all known cells in the map
+        for i in range(width):
+            for j in range(height):
+                // if we already explored the cell
+                if already_known(i, j) and is_unoccupied(i, j):
+                    // check all neighbours of the cell
+                    for x, y in neighbours(i, j):
+                        // if the neighbor cell is un-explored
+                        if not already_known(x, y):
+                            // Add cell to frontier
+                            frontiers.append(x, y)
+        // exit if there are no frontiers left
+        if len(frontiers) == 0:
+            break
+
+        // Get frontier closest to robot
+        closest_frontier = get_closest_frontier(frontiers, robot)
+
+        // Move robot to the frontier
+        move_to(closest_frontier)
+
+        // Observe the neighbouring cells
+        for x, y in neighbours(closest_frontier):
+            occupied = sense_is_occupied(x, y)
+            // update the map
+            map[x][y] = occupied
+\end{verbatim}
+
+\section{(c)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/robot_exploring.png}
+    \caption{Map of the robot environment in question}
+    \label{robot_exploring:map}
+\end{figure}
+
+Following the frontier algorithm described in (b), the robot will explore the environment in the following order:
+
+\begin{enumerate}
+    \item The robot starts at cell (0, 0), it senses (0-3, 0-3) are all unoccupied. It add all 9 cells to the known list. Loop through the map, and add unknown neighbor of known cells to frontier list in this case (3, 0), (3, 1), (3, 2), (0, 3), (1, 3), (2, 3).
+    \item Robot will pick the closest frontier cell in this case (3, 0) and move to it. The robot now senses (3-6, 0-3) are all unoccupied. It add all 16 cells to the known list. Loop through the map, and add unknown neighbor of known cells to frontier list in this case (6, 0), (6, 1), (6, 2), (6, 3), (3, 3), (4, 3), (5, 3).
+    \item Robot will pick the closest frontier cell in this case (0, 6) and move to it. It will encounter obstacle P and sense obstacle C and D in the process. it marks all these cells known and occupied. There is no new points added to the frontier list.
+    \item Robot will pick the closest frontier cell in this case (3, 4) and move to it. It will encounter obstacle C and B and put them on a map as well.
+    \item The robot then will move down to explore further frontiers towards the right hand side of the map.
+\end{enumerate}
 
 \printbibliography
 
