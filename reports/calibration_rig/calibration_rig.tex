@@ -10,15 +10,23 @@
 \usepackage{subcaption}
 \usepackage{wrapfig}
 \setlength{\intextsep}{1pt}%
+\setlength{\belowcaptionskip}{5pt}
+\setlength{\abovecaptionskip}{5pt}
 
-\title{3D Printer Based Open Source Calibration Platform for Whisker Sensors}
+\title{3D Printer Based Open Source Calibration Platform for Whisker Sensors\thanks{This work was partly supported by the Engineering and Physical Sciences
+Research Council Grant [EP/S023917/1]}}
 
-\author{Liyou Zhou\inst{1}\orcidID{0009-0005-9491-9003} \and
-Second Author\inst{1}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{1}\orcidID{2222--3333-4444-5555}}
+\author{
+    Liyou Zhou\orcidID{0009-0005-9491-9003} \and
+    Omar Ali \and
+    Emmanuel Soumo \and
+    Eden Attenborough \and
+    Jacob Swindell \and
+    George Davies \and
+    Charles Fox
+}
 
-
-\institute{University of Lincoln, Lincoln, UK}
+\institute{School of Computer Science, University of Lincoln, Lincoln, UK}
 %
 
 \authorrunning{L. Zhou et al.}
@@ -165,7 +173,7 @@ To correct for this effect, we scale the derivative of sensor reading by a facto
         \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The color corresponds to the value of N}
         \label{fig:x_y_relationship.png}
     \end{subfigure}
-    \caption{}
+    \caption{First derivative of \(y\) for each episode of contact}
     \label{fig:episode_analysis}
 \end{figure}
 
@@ -175,16 +183,17 @@ It can be seen there is a clear correlation between \(\dot{y}\) and \(x\). Fig. 
     \item displacement due to bending of the whisker shaft \(y_{bend}\).
 \end{itemize}
 \[y_{contact} = y_{twist} + y_{bend}\]
+
+\begin{wrapfigure}{r}{.5\textwidth}
+    \centering
+    \includegraphics[width=.45\textwidth]{figures/polynomial_regression.png}
+    \caption{Polynomial Regression of the relationship 100th sample of \(\dot{y}\) in each episode and the contact distance \(x\)}
+    \label{fig:polynomial_regression.png}
+\end{wrapfigure}
+
 While \(y_{twist}\) creates a directly proportional reading at the magnetometer sensor, the bending of the whisker shaft \(y_{bend}\) causes non-linearity. Hence, a non-linear model is required to model the relationship between \(x\) and \(\dot{y}\).
 
 Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is modelled using a third order polynomial via a least-square regression algorithm. Fig. \ref*{fig:polynomial_regression.png} plots the final fitted curve.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/polynomial_regression.png}
-    \caption{Polynomial Regression of the relationship 100th sample of \(\dot{y}\) in each episode and the contact distance \(x\)}
-    \label{fig:polynomial_regression.png}
-\end{figure}
 
 The parameters of the polynomial is saved and used in the whisker driver node to estimate the contact location in real time. The benefit of a polynomial model is that it is very quick to compute. On a resource constrained robotic application with many whisker sensors, such a low-demand algorithm is desirable.
 
