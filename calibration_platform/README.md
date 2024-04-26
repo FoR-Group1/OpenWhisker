@@ -45,7 +45,6 @@
 <img src=docs/figures/printer_measurements_3.png  width="250">
 
 ## Software Instructions
-## Software Instructions
 Requirements
 ```
 pip install pyserial
@@ -66,19 +65,23 @@ Once all the prior configurations have been set up. You may now run `GcodeContro
 
 
 #### Using the controller
-Alternatively, the GcodeController can be imported where all the functions can be accessed. Every time the class is initialised, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins. 
+Alternatively, the GcodeController can be imported to customise testing configurations. Every time the class is initialised, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins. 
 
-After this custom test configurations can be made using a combination of the methods:
+Custom test configurations can be made using a combination of the methods:
    - `prepare()`
    - `send_movement(..)`
    - `set_speed(..)`
    - `send_message(..)`
 
-
+Example Usage
 ```python
 port = "/dev/ttyACM0"
 controller = GcodeController(port)
+
+# Homing the printer
 controller.prepare()
+
+# Sending Custom Configurations
 send_message("starting progress...")
 controller.send_movement(10, 50)
 sleep(2)
