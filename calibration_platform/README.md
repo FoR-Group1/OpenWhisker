@@ -45,3 +45,53 @@
 <img src=docs/figures/printer_measurements_3.png  width="250">
 
 ## Software Instructions
+## Software Instructions
+Requirements
+```
+pip install pyserial
+pip install fire
+```
+
+1. Connect the 3D printer to you computer via a serial connection (i.e. using the USB interface in this case)
+2. Identify the serial port of the 3D printer on the computer. By default, it is set to locate the serial port at `/dev/ttyACM0`. 
+Check for the new port connection at: 
+```
+ls /dev/tty*
+```
+
+3. Begin the calibration process
+Once all the prior configurations have been set up. You may now run `GcodeController.py`. By default, this will initially calibrate the printer. And then will begin a routine of bending the whisker along its shaft. This is defined in the `main()` function.
+
+**It is recommended to test the controller WITHOUT the whisker in place, to observe the behaviours!!**
+
+
+#### Using the controller
+Alternatively, the GcodeController can be imported where all the functions can be accessed. Every time the class is initialised, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins. 
+
+After this custom test configurations can be made using a combination of the methods:
+   - `prepare()`
+   - `send_movement(..)`
+   - `set_speed(..)`
+   - `send_message(..)`
+
+
+```python
+port = "/dev/ttyACM0"
+controller = GcodeController(port)
+controller.prepare()
+send_message("starting progress...")
+controller.send_movement(10, 50)
+sleep(2)
+controller.send_movement(150, 50)
+send_message("...slowing down...")
+controller.set_speed(1000)
+controller.send_movement(100, 50)
+send_message("...speeing up...")
+controller.set_speed(2000)
+controller.send_movement(200, 50)
+send_message("...complete!")
+sleep(3)
+send_message("Home time! :)")
+controller.prepare()
+```
+
