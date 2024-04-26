@@ -57,3 +57,40 @@ Issue a service call to 3d printer to start the calibration routine
 ## Data Analysis
 
 An example on how to read the sensor data from the mcap file and fit a new whisker model can be found [here](scripts/data_analysis.ipynb).
+
+## Running GCodeController directly
+
+A python interface is written to control the 3D printer. It can be invoked independent of ROS2 and can be useful in certain applications. GcodeController class can be imported to customize testing configurations. Every time the class is initialized, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins.
+
+Custom test configurations can be made using a combination of the methods:
+
+- `prepare()`
+- `send_movement(..)`
+- `set_speed(..)`
+- `send_message(..)`
+
+Example Usage
+
+```python
+port = "/dev/ttyACM0"
+controller = GcodeController(port)
+
+# Homing the printer
+controller.prepare()
+
+# Sending Custom Configurations
+send_message("starting progress...")
+controller.send_movement(10, 50)
+sleep(2)
+controller.send_movement(150, 50)
+send_message("...slowing down...")
+controller.set_speed(1000)
+controller.send_movement(100, 50)
+send_message("...speeing up...")
+controller.set_speed(2000)
+controller.send_movement(200, 50)
+send_message("...complete!")
+sleep(3)
+send_message("Home time! :)")
+controller.prepare()
+```

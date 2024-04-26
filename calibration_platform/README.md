@@ -45,56 +45,75 @@
 <img src=docs/figures/printer_measurements_3.png  width="250">
 
 ## Software Instructions
-Requirements
-```
-pip install pyserial
-pip install fire
-```
 
-1. Connect the 3D printer to you computer via a serial connection (i.e. using the USB interface in this case)
-2. Identify the serial port of the 3D printer on the computer. By default, it is set to locate the serial port at `/dev/ttyACM0`. 
-Check for the new port connection at: 
-```
-ls /dev/tty*
+To calibration the sensor for radial contact distance inference, run the following commands in the [whisker_driver_ros2](software/whisker_driver_ros2/) folder.
+
+### Install Dependencies
+
+Install ROS2 environment following [this](https://docs.ros.org/en/foxy/Installation.html) instruction. Then run:
+
+```sh
+> scripts/install_deps.sh
 ```
 
-3. Begin the calibration process
-Once all the prior configurations have been set up. You may now run `GcodeController.py`. By default, this will initially calibrate the printer. And then will begin a routine of bending the whisker along its shaft. This is defined in the `main()` function.
+### Build
 
-**It is recommended to test the controller WITHOUT the whisker in place, to observe the behaviours!!**
-
-
-#### Using the controller
-Alternatively, the GcodeController can be imported to customise testing configurations. Every time the class is initialised, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins. 
-
-Custom test configurations can be made using a combination of the methods:
-   - `prepare()`
-   - `send_movement(..)`
-   - `set_speed(..)`
-   - `send_message(..)`
-
-Example Usage
-```python
-port = "/dev/ttyACM0"
-controller = GcodeController(port)
-
-# Homing the printer
-controller.prepare()
-
-# Sending Custom Configurations
-send_message("starting progress...")
-controller.send_movement(10, 50)
-sleep(2)
-controller.send_movement(150, 50)
-send_message("...slowing down...")
-controller.set_speed(1000)
-controller.send_movement(100, 50)
-send_message("...speeing up...")
-controller.set_speed(2000)
-controller.send_movement(200, 50)
-send_message("...complete!")
-sleep(3)
-send_message("Home time! :)")
-controller.prepare()
+```sh
+> colcon build && . install/setup.bash
 ```
 
+### Determine Serial Port Name
+
+1. Connect the 3D printer to the host computer via a serial connection (i.e. using the USB interface in this case)
+2. Identify the serial port of the 3D printer on the computer. By default, it is set to locate the serial port at `/dev/ttyACM0`.
+Check for the new port connection by running: `ls /dev/tty*`
+3. Now connect the whisker sensor to another USB port. Run again `ls /dev/tty*` and note down the newly appeared port. It is likely to be `/dev/ttyACM1`.
+
+The port names are then used in the following ros2 commands.
+
+### Data collection
+
+Launch whisker sensor driver node
+
+```sh
+> ros2 run whisker_driver_node whisker_driver_node --ros-args -p serial_device:=/dev/ttyACM0 -p whisker_model_path:=$(pwd)/whisker_driver_ros2/scripts/whisker_model.pkl
+```
+
+Launch 3d printer driver node
+
+```sh
+> ros2 run printer_driver_node printer_driver_node --ros-args -p serial_device:=/dev/ttyACM1
+```
+
+Start recording data on all topics into a rosbag
+
+```sh
+> ros2 bag record -s mcap --all
+```
+
+Issue a service call to 3d printer to start the calibration routine
+
+```sh
+> ros2 service call /increments_beam_test whisker_interfaces/IncrementsBeamTest "{total_x_distance: 6, total_y_distance: 100, increments_x: 0, increments_y
+: 15, pause_sec: 0}"
+```
+
+**WARNING**: It is recommended to test the controller WITHOUT the whisker in place first, to understand the behaviors!!
+
+### Fitting a parametric model
+
+The whisker model is a parametric model to predict contact point along the whisker from sensor reading.
+To fit a new whisker model, open and execute [this](software/whisker_driver_ros2/scripts/data_analysis.ipynb) jupyter notebook.
+A file named `whisker_model.pkl` is produced from the script.
+
+### Radial Contact Distance Inference
+
+To estimate contact distance in real time, launch `whisker_driver_node`:
+
+```sh
+> ros2 run whisker_driver_node whisker_driver_node --ros-args -p serial_device:=/dev/ttyACM0 -p whisker_model_path:=$(pwd)/whisker_driver_ros2/scripts/whisker_model.pkl
+```
+
+This will load the newly fitted `whisker_model.pkl` and use it to infer any contact made on the whisker.
+
+**_NOTE:_** Please see software [documentation](calibration_platform/software/whisker_driver_ros2/README.md) for further details about the software structure and how to adapt the code for different types of calibrations.

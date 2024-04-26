@@ -1,1 +1,1 @@
-../../../3DPrinterTesting/GcodeController.py
+../../../GCodeController/GcodeController.py
