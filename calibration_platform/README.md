@@ -116,4 +116,4 @@ To estimate contact distance in real time, launch `whisker_driver_node`:
 
 This will load the newly fitted `whisker_model.pkl` and use it to infer any contact made on the whisker.
 
-**_NOTE:_** Please see software [documentation](calibration_platform/software/whisker_driver_ros2/README.md) for further details about the software structure and how to adapt the code for different types of calibrations.
+**_NOTE:_** Please see software [documentation](software/whisker_driver_ros2/README.md) for further details about the software structure and how to adapt the code for different types of calibrations.
