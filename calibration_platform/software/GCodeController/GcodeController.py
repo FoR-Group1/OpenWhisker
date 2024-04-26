@@ -2,18 +2,16 @@
 
 import serial
 from typing import Final
-import threading
 from time import sleep, time
 import csv
 import re
 import os
-import queue
 import sys
 
 
 class GcodeController:
     # Constants
-    PORT: Final[str] = "/dev/ttyACM2"  # printer connection port
+    PORT: Final[str] = "/dev/ttyACM0"  # printer connection port
     MIN_SPEED: Final[int] = 1000  # minimum allowed speed for the nozzle
     MAX_SPEED: Final[int] = 15000  # maximum allowed speed for the nozzle
     MIN_X: Final[int] = 0
@@ -108,7 +106,7 @@ class GcodeController:
             self.printer_status = self.serial.readline().decode().strip()
             with open(self.LOG_FILE, mode="a") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
-                writeable_data = self.gcode_parser()
+                writeable_data = self._gcode_parser()
                 if writeable_data:
                     writer.writerow(self.log_data)
 
@@ -117,7 +115,7 @@ class GcodeController:
         Method to update the current position of the print head
         """
         print_to_stdout("update_position")
-        self.send_gcode("M114:")
+        self._send_gcode("M114:")
         self.read_and_store_serial()
 
     def get_position_loop(self) -> None:
@@ -129,7 +127,7 @@ class GcodeController:
                 if self.gcode_is_available:
                     # FIXME: if i want to sleep then use a timer callback
                     sleep(1 / self.READING_FREQUENCY)  # freq is set by the printer
-                    self.send_gcode("M114:")
+                    self._send_gcode("M114:")
                 self.read_and_store_serial()
 
     def beam_test_prepare(self) -> None:
@@ -219,7 +217,7 @@ class GcodeController:
         gcode += ":"
         return gcode
 
-    def gcode_parser(self):
+    def _gcode_parser(self):
         """
         Method to extact gcode information returned from the printer
         currently:
@@ -268,9 +266,13 @@ class GcodeController:
     ############## ACTIONS ##################
     #########################################
 
-    def send_gcode(self, gcode) -> None:
+    def _send_gcode(self, gcode) -> None:
         """
-        writes gcode to the printer
+        Sends a G-code command to the printer.
+
+        Parameters:
+        gcode (string): The G-code command to send to the printer.
+
         """
         self.previous_gcode = self.current_gcode
         self.current_gcode = gcode.encode()
@@ -282,19 +284,41 @@ class GcodeController:
 
     def set_speed(self, speed) -> None:
         """
-        sets the speed of the printer
+        Sets the speed of the printer.
+
+        This function generates a G-code command to set the printer's speed to the specified value. 
+        It updates the printer_speed attribute of the object and sends the G-code command to the printer.
+
+        Parameters:
+        speed (float): The speed to set the printer to. This should be a positive number representing
+        the desired speed in mm/s.
+
+        Returns:
+        None
         """
         set_speed_gcode = self.gcode(f=speed)
         self.printer_speed = speed
-        self.send_gcode(set_speed_gcode)
+        self._send_gcode(set_speed_gcode)
 
-    def send_movement(self, x=None, y=None, z=None, f=None):
+    def send_movement(self, x=None, y=None, z=None, f=None) -> None:
+        """
+        Sends a movement command to the printer.
+
+        Parameters:
+        x (float): The x-coordinate to move to. If None, the printer will not move along the x-axis.
+        y (float): The y-coordinate to move to. If None, the printer will not move along the y-axis.
+        z (float): The z-coordinate to move to. If None, the printer will not move along the z-axis.
+        f (float): The speed for the movement. If None, the printer will use its current speed.
+
+        Returns:
+        None
+        """
         if not self.calibrated:
             print_to_stdout("Please Calibrate/Prepare the Printer First")
             self.send_message("Please run prepare()")
 
         gcode = self.gcode(x, y, z, f)
-        self.send_gcode(gcode)
+        self._send_gcode(gcode)
 
         done = False
         while not done:
@@ -310,18 +334,34 @@ class GcodeController:
 
     def send_wait(self, m_sec) -> None:
         """this sucks, don't use it"""
-        self.send_gcode(f"G4 P{m_sec}:")
+        self._send_gcode(f"G4 P{m_sec}:")
         sleep(m_sec / 1000)
 
     def send_message(self, message) -> None:
-        self.send_gcode(f"M117 {message}:")
+        """
+        Sends a message to the printer LCD.
+
+        Parameters:
+        message (string): Message to send to the printer display.
+        
+        Returns:
+        None
+        """
+        self._send_gcode(f"M117 {message}:")
 
     def prepare(self) -> None:
         """
-        Calibrates X and Y axis on the 3D Printer
+        Prepares the printer for use.
+
+        This function sends a series of G-code commands to the printer to prepare it for use.
+        It sets the printer to use millimeters as its unit of measurement, homes the X and Y axes, 
+        and sets the printer speed to the default value.
+
+        Returns:
+        None
         """
-        self.send_gcode("G21:")  # setting the printer to mm
-        self.send_gcode("G28 XY:")  # homing X and Y of the printer
+        self._send_gcode("G21:")  # setting the printer to mm
+        self._send_gcode("G28 XY:")  # homing X and Y of the printer
         self.set_speed(self.printer_speed)
         sleep(6)
         self.calibrated = True
