@@ -25,13 +25,13 @@
 2. Attach the Whisker Sensor Adaptor to rear end of the printer base (optinally use a sheed to rubber between the adaptor and the printer base for increased resistance and protection from the screws)
 
 3. Attachment of the End Effector Mount and Beam - Remove the screws from the extruder motor - Attach the End Effector Mount - Screw it back in - Place the Ruler into the slot
-   ![Image](./calibration_platform/docs/figures/beam_mount){width=600px}
+   ![Image](docs/figures/beam_mount.png | width=100)
 
 4. Measurements:
    It is important to take note of a few measurements to allow effective testing.
+   `BEAM_THICKNESS`, `WHISKER_X`, `BEAM_EDGE_Y_RELATIVE_TO_NOZZLE`, `BEAM_START`
+   
 
-![Image](docs/figures/printer_measurements_1)
-![Image](docs/figures/printer_measurements_2)
-![Image](docs/figures/printer_measurements_3)
+<img src=docs/figures/printer_measurements_1.png  width="250"><img src=docs/figures/printer_measurements_2.png  width="250"><img src=docs/figures/printer_measurements_1.png  width="250">
 
 ## Software Instructions
