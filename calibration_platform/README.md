@@ -30,8 +30,8 @@
 4. Measurements:
    It is important to take note of a few measurements to allow effective testing.
 
-![Image](./calibration_platform/docs/figures/printer_measurements_1){width=600px}
-![Image](./calibration_platform/docs/figures/printer_measurements_2){width=600px}
-![Image](./calibration_platform/docs/figures/printer_measurements_3)
+![Image](docs/figures/printer_measurements_1)
+![Image](docs/figures/printer_measurements_2)
+![Image](docs/figures/printer_measurements_3)
 
 ## Software Instructions
