@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this OSH project, please cite it as below."
+title: "FoR-Group1/OpenWhisker: Whisker sensors calibration platform"
+doi: "10.5281/zenodo.11080831"
+url: "https://zenodo.org/doi/10.5281/zenodo.11080830"
+authors:
+  - family-names: "Zhou"
+    given-names: "Liyou"
+  - family-names: "Ali"
+    given-names: "Omar"
+  - family-names: "Soumo"
+    given-names: "Emmanuel"
+  - family-names: "Attenborough"
+    given-names: "Eden"
+  - family-names: "Swindell"
+    given-names: "Jacob"
+  - family-names: "Davies"
+    given-names: "George"
+  - family-names: "Fox"
+    given-names: "Charles"
+license:
+  - "GNU General Public License v3.0 or later"
+  - "CERN Open Hardware Licence Version 2 - Weakly Reciprocal"
+version: "0.1.0"
+date-released: 2024-04-28
+publisher: "Zenodo"
