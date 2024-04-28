@@ -9,6 +9,7 @@
 \graphicspath{ {./figures/} }
 \usepackage{subcaption}
 \usepackage{wrapfig}
+\usepackage{cite}
 \setlength{\intextsep}{1pt}%
 \setlength{\belowcaptionskip}{5pt}
 \setlength{\abovecaptionskip}{5pt}
@@ -132,7 +133,7 @@ The nodes are written to use standard ROS 2 messages and service definitions as 
 
 \section{Evaluation}
 
-To demonstrate the effectiveness of the calibration rig, a whisker sensor is calibrated to infer the radial contact location along the whisker. This is a crucial step in making the sensor useful in SLAM tasks \cite{pearsonSimultaneousLocalisationMapping2013} \cite{leporaNaiveBayesNovelty2010}. In these tasks, an array of whisker sensors is driven by a servo motor to whisk back and forth. When a contact is detected on one of the whiskers, its 3D world location is registered. Gradually, a map of the environment can be built with many of these contact points as the robot moves around.
+To demonstrate the effectiveness of the calibration rig, a whisker sensor is calibrated to infer the radial contact location along the whisker. This is a crucial step in making the sensor useful in SLAM tasks \cite{pearsonSimultaneousLocalisationMapping2013, leporaNaiveBayesNovelty2010}. In these tasks, an array of whisker sensors is driven by a servo motor to whisk back and forth. When a contact is detected on one of the whiskers, its 3D world location is registered. Gradually, a map of the environment can be built with many of these contact points as the robot moves around.
 
 Using the ROS 2 \textbf{printer\_driver\_node}, the printer is instructed to make contact with the whisker shaft at a series of known locations. The contact is made in a swift back and forth motion to mimic whisking action. Readings from the sensor as well as the 3D location of the printer head is easily recorded via the ROS 2 \textbf{rosbag} utility. Fig.~\ref{fig:calibration_routine} shows the raw data collected from 3 consecutive calibration runs.
 
