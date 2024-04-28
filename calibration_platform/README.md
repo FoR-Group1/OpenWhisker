@@ -33,20 +33,23 @@
 
 4. Measurements:
    It is important to take note of a few measurements to allow effective testing.
+   1. Beam positioning and dimensions
    - `BEAM_THICKNESS`: width of the ruler (or any alternative beam used)
-   - `WHISKER_X`: x position of the whisker on the printing bed
    - `BEAM_EDGE_Y_RELATIVE_TO_NOZZLE`: y distance of the beam relative to the nozzle
    - `BEAM_START`: x distance of the right-most edge of the beam relative to the nozzle
+   2. Whisker positioning and dimensions
+   - `WHISKER_X`: x position of the whisker on the printing bed
    - `WHISKER_LENGTH_Y`: length of the whisker being evaluated
    - `WHISKER_TIP_Y`: y distance of the beam at the edge tip of the whisker
+
+These measurements should be modified within the printer controller, located at `calibration_platform/software/GCodeController/GcodeController.py`, based on your testing setup. This is to allow the configuration to be quite flexible for any printer, any beam position and any whisker being tested. This also allows the beam to be mounted however you would like so long as it is vertically placed.
 
 <img src=docs/figures/printer_measurements_1.png  width="250">
 <img src=docs/figures/printer_measurements_2.png  width="250">
 <img src=docs/figures/printer_measurements_3.png  width="250">
 
 ## Software Instructions
-
-To calibration the sensor for radial contact distance inference, run the following commands in the [whisker_driver_ros2](software/whisker_driver_ros2/) folder.
+To calibrate the sensor for radial contact distance inference, run the following commands in the [whisker_driver_ros2](software/whisker_driver_ros2/) folder.
 
 ### Install Dependencies
 
