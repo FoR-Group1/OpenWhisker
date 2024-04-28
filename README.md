@@ -1,6 +1,6 @@
 # Whisker Sensor Calibration Platform
 
-[![DOI](https://zenodo.org/badge/703098309.svg)](https://zenodo.org/doi/10.5281/zenodo.11080830)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11081338.svg)](https://zenodo.org/doi/10.5281/zenodo.11081338)
 
 <img src=calibration_platform/docs/figures/3d_printer_overview.jpg  width="250">
 
