@@ -4,32 +4,42 @@
 
 ## Bill of Materials
 
-| Item                    | Quantity | URL |
+| Item                    | Quantity | URL/Notes |
 | ----------------------- | -------- | --- |
-| Prusa i3 3D printer     | 1        |     |
-| Whisker Sensor Mount    | 1        |     |
-| Whisker Sensor Adaptor  | 1        |     |
-| End Effector Mount      | 5        |     |
-| M4 Screws               | 4        |     |
-| Ruler                   | 1        |     |
-| Rubber Sheet (optional) |          |     |
+| 3D printer              | 1        |  With a front mounted extruder motor (Origianl Prusa i3 MK2 was used - no longer on sale)   |
+| M4 Screws               | 4        | https://www.amazon.co.uk/newlng-1180Pieces-Screws-Carbon-Washers/dp/B09YLMQFQV/ref=sr_1_1_sspa?sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1    |
+| 15cm Metal Ruler        | 1        | https://www.amazon.co.uk/Draper-Expert-22670-6-inch-Stainless/dp/B008RXSAM2    |
+| Rubber Sheet (optional) | 1        | https://www.amazon.co.uk/Adhesive-Ferrite-Ferrous-Magnetic-Movement/dp/B0722VX2N5/ref=sr_1_3?s=diy&sr=1-3    |
+
+## Materials to 3D Print
+| Item                    | Quantity | 
+| ----------------------- | -------- | 
+| Whisker Sensor Mount    | 1        |  
+| Whisker Sensor Adaptor  | 1        |  
+| End Effector Mount      | 1        |  
 
 ## Assembly Instructions
 
-1. Printing the
-
+1. Print the following parts:
    - End Effector Mount
    - Whisker Sensor Adaptor
    - End Effector Mount
+These can becalibration_platform/hardware/End Effector Mount.stl found at `calibration_platform/hardware/`
 
 2. Attach the Whisker Sensor Adaptor to the rear end of the printer base (optionally use a sheet to rubber between the adaptor and the printer base for increased resistance and protection from the screws)
 
-3. Attachment of the End Effector Mount and Beam
+3. Attach the End Effector Mount and Beam
    - Remove the screws from the extruder motor
+   <img src=docs/figures/remove_screw_from_extruder_mount.png  width="250">
+
    - Attach the End Effector Mount
    - Re-attach the screws through the End Effector Mount holes
+
+   <img src=docs/figures/screw_beam_mount_into_extruder.png  width="250">
+
    - Place the Ruler into the slot
-   ![Image](docs/figures/beam_mount.png | width=100)
+
+   <img src=docs/figures/beam_on_mount.png  width="250">
 
 4. Measurements:
    It is important to take note of a few measurements to allow effective testing.
