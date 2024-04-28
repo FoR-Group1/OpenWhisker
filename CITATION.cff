@@ -21,6 +21,6 @@ authors:
 license:
   - "GNU General Public License v3.0 or later"
   - "CERN Open Hardware Licence Version 2 - Weakly Reciprocal"
-version: "0.1.0"
+version: "0.1.1"
 date-released: 2024-04-28
 publisher: "Zenodo"
