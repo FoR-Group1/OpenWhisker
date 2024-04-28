@@ -12,6 +12,10 @@
 \setlength{\intextsep}{1pt}%
 \setlength{\belowcaptionskip}{5pt}
 \setlength{\abovecaptionskip}{5pt}
+\usepackage{array}
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
 
 \title{3D Printer Based Open Source Calibration Platform for Whisker Sensors\thanks{This work was partly supported by the Engineering and Physical Sciences
 Research Council Grant [EP/S023917/1]}}
@@ -38,58 +42,62 @@ Research Council Grant [EP/S023917/1]}}
 \maketitle
 
 \begin{abstract}
-Whisker sensors have been an active area of research in recent years for its interesting use-cases in robotics and mammal physiology research. Several attempts have been made to develop open-source versions of the sensor to promote wider adoption. The existing calibration processes for whisker sensors are highly proprietary, cost-prohibitive and error-prone. In this paper we present a low-cost open-source calibration and testing platform based on an off-the-shelf 3D printer. We demonstrate its effectiveness by calibrating a whisker sensor for radial contact distance inference. All artefact of the design is open sourced and fully reproducible.
+Whisker sensors have been an active area of research in recent years for its interesting use-cases in robotics and mammal physiology research. Several attempts have been made to develop open-source versions of the sensor to promote wider adoption. However, the existing calibration processes for whisker sensors are highly proprietary, cost-prohibitive and error-prone. In this paper we present a low-cost open-source calibration and testing platform based on an off-the-shelf 3D printer. We demonstrate its effectiveness by calibrating a whisker sensor for radial contact distance inference. All artefact of the design is open sourced and fully reproducible.
 \keywords{Whisker Sensor \and Calibration \and Open Source}
 \end{abstract}
 
 \section{Introduction}
 
-Whisker sensor is a type of tactile sensor that mimics the whiskers of rodents. It has been widely produced to study whiskered mammal physiology\cite{prescottActiveTouchSensing2020}. It has also garnered interests in the field of robotics in recent years as a low cost and effective tactile sensor. \cite{fotouhiDetectionBarelyVisible2021} shows its use in material defect identification. \cite{struckmeierViTaSLAMBioinspiredVisuoTactile2019} and \cite{foxTactileSLAMBiomimetic2012} used whisker sensors in tactile SLAM tasks.
+Whisker sensor is a type of tactile sensor that mimics the whiskers of rodents. It has been widely produced to study whiskered mammal physiology \cite{prescottActiveTouchSensing2020}. It has also garnered interests in the field of robotics in recent years as a low cost and effective tactile sensor. \cite{fotouhiDetectionBarelyVisible2021} shows its use in material defect identification. \cite{struckmeierViTaSLAMBioinspiredVisuoTactile2019} and \cite{foxTactileSLAMBiomimetic2012} used whisker sensors in tactile SLAM tasks.
 
 Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is not only time-consuming but also often involved expensive proprietary hardware. \cite{sullivanTactileDiscriminationUsing2012a} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms in order to make controlled movement to calibrate whisker sensors. \cite{evansWhiskerobjectContactSpeed2010a} relied on a Yamaha-PXYX Closed-source hardware Cartesian robot and Yamaha RCX 222 controller, together costing several thousand pounds.
 
-The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open source sensor designs has been made available to researchers and hobbyists \cite{RatatouilleWhiskersOpenWhiskerOpen}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open source 3D printer for automated and repeatable calibration.
+The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open source sensor designs have been made available to researchers and hobbyists \cite{RatatouilleWhiskersOpenWhiskerOpen}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open source 3D printer for automated and repeatable calibration.
 
 \section{Solution Overview}
 
 \subsection{Hardware Components}
 
-\begin{wrapfigure}{r}{0.4\textwidth}
-    \centering
-    \includegraphics[width=0.4\textwidth]{3d_printer_overview.jpg}
-    \caption{3D Printer based Calibration Rig consisting of a 3D printer, whisker sensor mount and end effector mount.}
-    \vspace{-5pt}
-    \label{fig:calibration_rig_overview}
-\end{wrapfigure}
-
 An overview of the hardware setup can be seen in Fig.~\ref{fig:calibration_rig}. The solution is built around the following main components:
 
 \begin{enumerate}
     \item \textbf{3D Printer} A Prusa i3 (MK2)~\cite{OriginalPrusaI3} was used as the base for the calibration rig.
-    \item \textbf{Whisker Sensor Mount} A 3D printable adaptor is designed to mount the specific whisker sensor used in the project onto the printer bed. Illustrated in Fig.~\ref{fig:whisker_mount_base}, the base mounts to the bed using grub screws. The adaptor is designed to hold the specific shape of the whisker sensor in place and allow for easy removal and replacement of the sensor. The base is designed with mounting holes where the adaptor can be secured via zip ties. The design for the sensor used in the experiment can be found in \cite{FoRGroup1OpenWhisker2024}.
+
+    \item \textbf{Whisker Sensor Mount} A 3D printable mount is designed to mount the specific whisker sensor used in the project onto the printer bed. Illustrated in Fig.~\ref{fig:whisker_mount_base}, the base mounts to the bed using grub screws. The adaptor is designed to hold the specific shape of the whisker sensor in place and allow for easy removal and replacement of the sensor. The base is designed with mounting holes where the adaptor can be secured via zip ties.
+
+    \item \textbf{Whisker Sensor} The calibration platform is designed to work with different sensor designs via the sensor specific adaptor component. The whisker sensor used in our experimental setup is of a similar design to the one presented in \cite{RatatouilleWhiskersOpenWhiskerOpen}. It consists of a 3d printed whisker shaft with a gel material at the base acting as a hinge. A magnet is attached to the bottom of the whisker shaft and a digital magnetometer is used to sense the displacement of the magnet.
+    
     \item \textbf{End Effector} Different end effectors can be mounted onto the printer head to make contact with the whisker sensor in order to carry out various calibration routines. For contact distance calibration, a metal ruler is mounted to make point contact with the whisker.
 \end{enumerate}
 
+
+
 \begin{figure}
-    \begin{subfigure}{.32\textwidth}
+    \begin{subfigure}{.245\columnwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{3d_printer_overview.jpg}
+        \caption{Overview}
+        \label{fig:calibration_rig_overview}
+    \end{subfigure}
+    \begin{subfigure}{.245\columnwidth}
     \centering
-    \includegraphics[width=0.9\textwidth]{whisker_mount_base.png}
-        \caption{whisker mount base}
+    \includegraphics[width=0.95\textwidth]{whisker_mount_base.png}
+        \caption{}
         \label{fig:whisker_mount_base}
     \end{subfigure}
-    \begin{subfigure}{.32\textwidth}
+    \begin{subfigure}{.245\columnwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{whisker_mount_adaptor.png}
-        \caption{Whisker sensor adaptor}
+        \includegraphics[width=0.95\textwidth]{whisker_mount_adaptor.png}
+        \caption{}
         \label{fig:whisker_mount_adaptor}
     \end{subfigure}
-    \begin{subfigure}{.32\textwidth}
+    \begin{subfigure}{.245\columnwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{beam_monunt.png}
-        \caption{End effector mount}
+        \includegraphics[width=0.95\textwidth]{ruler_support.png}
+        \caption{}
         \label{fig:beam_monunt}
     \end{subfigure}
-    \caption{3D printed mounts and adaptors}
+    \caption{Hardware components of the calibration platform. (b) Whisker mount base (c) Whisker sensor adaptor (d) End effector mount}
     \label{fig:calibration_rig}
 \end{figure}
 
@@ -183,7 +191,12 @@ To correct for this difference, we scale the derivative of sensor reading by a f
 \end{figure}
 
 
-It can be seen there is a clear correlation between \(\dot{y}\) and \(x\). Fig. \ref*{fig:x_y_relationship.png} plots the Nth data point in each episode against the contact distance from the base of the whisker \(x\). It can be noted that the relationship is not linear as suggested by Eq.~\ref*{eq:linear_relationship}. This is because the deflection in \(y\) at the contact point of the whisker has 2 components, displacement due to twisting of the gel material \(y_{twist}\) and displacement due to bending of the whisker shaft \(y_{bend}\). \(y_{contact} = y_{twist} + y_{bend}\)
+It can be seen there is a clear correlation between \(\dot{y}\) and \(x\). Fig. \ref*{fig:x_y_relationship.png} plots the Nth data point in each episode against the contact distance from the base of the whisker \(x\). It can be noted that the relationship is not linear as suggested by Eq.~\ref*{eq:linear_relationship}. This is because the deflection in \(y\) at the contact point of the whisker has 2 components:
+
+\begin{equation}
+y_{contact} = y_{twist} + y_{bend}
+\end{equation}
+where \(y_{twist}\) is the displacement due to twisting of the gel material and \(y_{bend}\) is the displacement due to bending of the whisker shaft.
 
 \begin{wrapfigure}{r}{.5\textwidth}
     \centering
@@ -200,7 +213,7 @@ The parameters of the polynomial is saved and used in the whisker driver node to
 
 \section{Conclusion}
 
-As a result of the project, a fully re-producible cost-effective whisker sensor calibration rig is developed and made available via open source software and hardware. The utilization of a 3D printer as the main component drastically reduces the cost and barrier to reproduction. The integration with ROS 2 provides a convenient interface for data collection and analysis. We demonstrate the accurate and repeatable calibration of the whisker sensor in estimating the radial contact location. There is huge potential in further development based on the project's work, and we hope to see more people joining the effort. All project artifacts can be viewed at: \url{https://github.com/FoR-Group1/OpenWhisker}.
+As a result of the project, a fully re-producible cost-effective whisker sensor calibration rig is developed and made available via open source software and hardware. The utilization of a 3D printer as the main component drastically reduces the cost and barrier to reproduction. The integration with ROS 2 provides a convenient interface for data collection and analysis. We demonstrate the accurate and repeatable calibration of the whisker sensor in estimating the radial contact location. There is huge potential in further development based on the project's work, and we hope to see more people joining the effort. All project artifacts can be viewed at: \url{https://github.com/FoR-Group1/OpenWhisker/tree/main/calibration_platform}.
 
 \bibliography{Whiskers.bib}
 
