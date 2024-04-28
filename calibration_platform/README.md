@@ -30,16 +30,13 @@ These can becalibration_platform/hardware/End Effector Mount.stl found at `calib
 
 3. Attach the End Effector Mount and Beam
    - Remove the screws from the extruder motor
-   <img src=docs/figures/remove_screw_from_extruder_mount.png  width="250">
+   <img src=docs/figures/remove_screw_from_extruder_motor.jpeg  width="250">
 
-   - Attach the End Effector Mount
-   - Re-attach the screws through the End Effector Mount holes
-
-   <img src=docs/figures/screw_beam_mount_into_extruder.png  width="250">
+   - Screw the End Effector Mount into the extruder motor
+   <img src=docs/figures/screw_beam_mount_into_extruder.jpeg  width="250">
 
    - Place the Ruler into the slot
-
-   <img src=docs/figures/beam_on_mount.png  width="250">
+   <img src=docs/figures/beam_on_mount.jpeg  width="250">
 
 4. Measurements:
    It is important to take note of a few measurements to allow effective testing.
