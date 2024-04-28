@@ -103,7 +103,7 @@ The `increments_beam_test` is the default action that is currently deployed. Bel
 |pause_sec| time to pause at each incremental position|
 
 
-<img src=docs/figures/increments_beam_test.png  width="300">
+<img src=../../docs/figures/increments_beam_test.png width=300>
 
 #### Custom test configurations
 If you would like to create a custom test configuration, it is suggested to be done by making use of the controller actions described above. This could look like something along the lines of:

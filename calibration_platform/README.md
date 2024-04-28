@@ -4,12 +4,13 @@
 
 ## Bill of Materials
 
-| Item                    | Quantity | URL/Notes |
-| ----------------------- | -------- | --- |
-| 3D printer              | 1        |  With a front mounted extruder motor (Origianl Prusa i3 MK2 was used - no longer on sale)   |
-| M4 Screws               | 4        | https://www.amazon.co.uk/newlng-1180Pieces-Screws-Carbon-Washers/dp/B09YLMQFQV/ref=sr_1_1_sspa?sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1    |
-| 15cm Metal Ruler        | 1        | https://www.amazon.co.uk/Draper-Expert-22670-6-inch-Stainless/dp/B008RXSAM2    |
-| Rubber Sheet (optional) | 1        | https://www.amazon.co.uk/Adhesive-Ferrite-Ferrous-Magnetic-Movement/dp/B0722VX2N5/ref=sr_1_3?s=diy&sr=1-3    |
+| Item                    | Quantity | URL/Notes | Cost |
+| ----------------------- | -------- | --- | ---|
+| 3D printer              | 1        |  With a front mounted extruder motor (Origianl Prusa i3 MK2 was used - no longer on sale)  | --- |
+| Spool of PLA | 1 | https://www.amazon.co.uk/eSUN-Filament-Dimensional-Accuracy-Printers/dp/B0CHDSB6LQ/ref=sr_1_12?sr=8-12 | £15 | 
+| M4 Screws               | 4        | https://www.amazon.co.uk/newlng-1180Pieces-Screws-Carbon-Washers/dp/B09YLMQFQV/ref=sr_1_1_sspa?sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1    | £12 |
+| 15cm Metal Ruler        | 1        | https://www.amazon.co.uk/Draper-Expert-22670-6-inch-Stainless/dp/B008RXSAM2    | £4 |
+| Rubber Sheet (optional) | 1        | https://www.amazon.co.uk/Adhesive-Ferrite-Ferrous-Magnetic-Movement/dp/B0722VX2N5/ref=sr_1_3?s=diy&sr=1-3    | £7.50 |
 
 ## Materials to 3D Print
 | Item                    | Quantity | 
@@ -17,6 +18,13 @@
 | Whisker Sensor Mount    | 1        |  
 | Whisker Sensor Adaptor  | 1        |  
 | End Effector Mount      | 1        |  
+
+## Other tools
+| Item                     |
+| -----------------------  | 
+| Allen keys               |
+| Phillips head screwdriver| 
+
 
 ## Assembly Instructions
 
