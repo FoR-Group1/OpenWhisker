@@ -60,18 +60,59 @@ An example on how to read the sensor data from the mcap file and fit a new whisk
 
 ## Running GCodeController directly
 
-A python interface is written to control the 3D printer. It can be invoked independent of ROS2 and can be useful in certain applications. GcodeController class can be imported to customize testing configurations. Every time the class is initialized, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins.
+A python interface is written to control the 3D printer. It can be invoked independently of ROS2 and can be useful in certain applications. GcodeController class can be imported to customize testing configurations. Every time the class is initialized, the `prepare()` method must be called to ensure the printer is aware of its `X` and `Y` origins.
 
-Custom test configurations can be made using a combination of the methods:
+The controller is comprised of a set of Controller Action, Test Action and Properties.
 
-- `prepare()`
-- `send_movement(..)`
-- `set_speed(..)`
-- `send_message(..)`
+#### Class Properties
+These are useful to allow introspection into the positions if the beam as well as the state of the testing rig.
+
+|||
+|---|---|
+|x | x position, relative to origin, of the printer nozzle in mm |
+|y | y position, relative to origin, of the printer nozzle in mm |
+|z | z position, relative to origin, of the printer nozzle in mm |
+|printer_speed | speed of the printer nozzle in in mm/min |
+|current_gcode  | the gcode currently in execution |
+| beam_from_whisker_tip | the x and y distance of the beam edge to the whisker tip |
+| get_beam_contact_position_x  | the x position, relative to nozzle, of the beam edge that will apply a force to the whisker  |
+| at_goal | if the current position of x is at the intended goal position from the previous gcode command |
+
+
+#### Controller Actions 
+Set of actions in order to safely control the printer without generating conflicts in commands. This improves safety compared to sending raw gcode commands
+|||
+|---|---|
+| set_speed | sets the printer speed|
+| send_movement | safely sends movements to the printer for |
+| send_message | displays a message on the printer screen to indicate the state|
+| prepare | zeroing calibration command in XY|
+
+### Test Actions
+Test actions are a combination of the different controller actions to allow a consistent testing procedure.  
+
+#### increments_beam_test
+The `increments_beam_test` is the default action that is currently deployed. Below are the input parameters described for it.
+
+|||
+|---|---|
+|total_x_distance| maximum distance to bend the whisker|
+|total_y_distance| maximum distance along the whisker from the tip to bend|
+|increments_x|The number of steps the beam will wait at before reaching total_x_distance,<br>Eg:<br>If total_x_distance = 9 and increments_x = 0:<br>the beam will only pause at 9mm<br><br>If total_x_distance = 9 and increments_x = 2:<br>the beam will pause at 3mm, then 6mm then 9mm|
+|increments_y| The number of steps the beam will wait at before reaching total_y_distance, similar to increments_x, but along the y axis of the whisker|
+|pause_sec| time to pause at each incremental position|
+
+
+<img src=docs/figures/increments_beam_test.png  width="300">
+
+#### Custom test configurations
+If you would like to create a custom test configuration, it is suggested to be done by making use of the controller actions described above. This could look like something along the lines of:
 
 Example Usage
 
 ```python
+from GcodeController import GcodeController
+
 port = "/dev/ttyACM0"
 controller = GcodeController(port)
 
@@ -94,3 +135,5 @@ sleep(3)
 send_message("Home time! :)")
 controller.prepare()
 ```
+
+Actions
