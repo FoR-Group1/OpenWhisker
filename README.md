@@ -1,5 +1,7 @@
 # Open Whisker Project
 
+[![DOI](https://zenodo.org/badge/703098309.svg)](https://zenodo.org/doi/10.5281/zenodo.11080830)
+
 Open source whisker sensor and calibration platform. Please see the following documentations for detail.
 
 - [Whisker Sensor](sensor_platform)
