@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this OSH project, please cite it as below."
 title: "FoR-Group1/OpenWhisker: Whisker sensors calibration platform"
-doi: "10.5281/zenodo.11080831"
-url: "https://zenodo.org/doi/10.5281/zenodo.11080830"
+doi: "10.5281/zenodo.11081338"
+url: "https://zenodo.org/doi/10.5281/zenodo.11081338"
 authors:
   - family-names: "Zhou"
     given-names: "Liyou"
