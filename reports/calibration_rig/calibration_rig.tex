@@ -57,7 +57,7 @@ Whisker sensors have been an active area of research in recent years for their i
 
 Whisker sensor is a type of tactile sensor that mimics the whiskers of rodents. It has been widely produced to study whiskered mammal physiology \cite{prescottActiveTouchSensing2020}. It has also garnered interests in the field of robotics in recent years as a low-cost and effective tactile sensor. \cite{fotouhiDetectionBarelyVisible2021} shows its use in material defect identification. \cite{struckmeierViTaSLAMBioinspiredVisuoTactile2019} and \cite{foxTactileSLAMBiomimetic2012} used whisker sensors in tactile SLAM tasks.
 
-Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is time-consuming and often involved expensive proprietary hardware. \cite{sullivanTactileDiscriminationUsing2012a} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms in order to make controlled movement to calibrate whisker sensors. \cite{evansWhiskerobjectContactSpeed2010a} relied on a Yamaha-PXYX closed-source hardware Cartesian robot and a Yamaha RCX 222 controller, together costing several thousand pounds.
+Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is time-consuming and often involved expensive proprietary hardware. \cite{sullivanTactileDiscriminationUsing2012} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms in order to make controlled movement to calibrate whisker sensors. \cite{evansWhiskerobjectContactSpeed2010} relied on a Yamaha-PXYX closed-source hardware Cartesian robot and a Yamaha RCX 222 controller, together costing several thousand pounds.
 
 The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open source sensor designs have been made available to researchers and hobbyists \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open source 3D printer for automated and repeatable calibration.
 
@@ -114,7 +114,7 @@ The printer natively supports a GCode~\cite{kramerNISTRS274NGCInterpreter2000} i
 
 \subsubsection{Whisker Sensor Interface}
 
-The whisker sensor used in our experiment utilizes a digital magnetometer to sense whisker displacement. The magnetometer is read by a micro-controller and is in turn connected to the host computer via a serial port. The micro-controller prints the x, y, z readings to serial port in hex format. The magnetometer has 16 bit per channel and is read at 800 Hz.
+The whisker sensor used in our experiment utilizes a digital magnetometer to sense whisker displacement. The magnetometer is read by a microcontroller and is in turn connected to the host computer via a serial port. The microcontroller prints the x, y, z readings to serial port in hex format. The magnetometer has 16 bit per channel and is read at 800 Hz.
 
 Different sensors will have different interfaces, hence a ROS 2 abstraction is provided so that the calibration routine can be easily adapted to different sensor implementations.
 
@@ -178,14 +178,14 @@ To correct for this difference, we scale the derivative of sensor (\(\dot{y}\)) 
     \begin{subfigure}[t]{.48\textwidth}
         \centering
         \includegraphics[width=0.95\columnwidth]{figures/corrected_derivative.png}
-        \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the color corresponds to the distance from the base of the whisker \(x\) where contact is made}
+        \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the colour corresponds to the distance from the base of the whisker \(x\) where contact is made}
         \label{fig:corrected_derivative.png}
     \end{subfigure}
     \hspace{3pt}
     \begin{subfigure}[t]{.48\textwidth}
         \centering
         \includegraphics[width=0.95\columnwidth]{figures/x_y_relationship.png}
-        \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The color corresponds to the value of N}
+        \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The colour corresponds to the value of N}
         \label{fig:x_y_relationship.png}
     \end{subfigure}
     \vspace{-5pt}
@@ -205,13 +205,13 @@ It can be seen there is a clear correlation between \(\dot{y}\) and the radial d
 
 While \(y_{twist}\) creates a directly proportional reading at the magnetometer sensor, the bending of the whisker shaft \(y_{bend}\) causes non-linearity. Hence, a non-linear model is required to model the relationship between \(x\) and \(\dot{y}\).
 
-Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is modelled using a third order polynomial via a least-square regression algorithm. Fig.~\ref*{fig:polynomial_regression.png} plots the final fitted curve.
+Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is regressed using a third order polynomial. Fig.~\ref*{fig:polynomial_regression.png} plots the final fitted curve. Root mean squared error is $5.31 mm$ for the training set and $4.36 mm$ for the test set. The max error is 17.4 mm.
 
 The parameters of the polynomial is saved and used in the \textbf{whisker\_driver\_node} to infer the contact location in real time. The benefit of a polynomial model is that it is very quick to compute. On a resource constrained robotic application with many whisker sensors, such a low-demand algorithm is desirable.
 
 \section{Conclusion}
 
-As a result of the project, a fully re-producible cost-effective whisker sensor calibration and testing platform is developed and made available via open source software and hardware. The utilization of a 3D printer as the main component drastically reduces the cost and barrier to reproduction. The integration with ROS 2 provides a convenient interface for data collection and analysis. We demonstrate the accurate and repeatable calibration of the whisker sensor in estimating the radial contact location. There is huge potential in further development based on the project's work, and we hope to see more people joining the effort. All project artifacts are available at: \url{https://github.com/FoR-Group1/OpenWhisker}.
+As a result of the project, a fully re-producible cost-effective whisker sensor calibration and testing platform is developed and made available via open source software and hardware. The utilization of a 3D printer as the main component drastically reduces the cost and barrier to reproduction. The integration with ROS 2 provides a convenient interface for data collection and analysis. We demonstrate the accurate and repeatable calibration of the whisker sensor in estimating the radial contact location. There is huge potential in further development based on the project's work, and we hope to see more people joining the effort. All project artefacts are available at: \url{https://github.com/FoR-Group1/OpenWhisker}.
 
 \bibliography{Whiskers.bib}
 
