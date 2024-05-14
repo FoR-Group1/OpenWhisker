@@ -205,7 +205,7 @@ It can be seen there is a clear correlation between \(\dot{y}\) and the radial d
 
 While \(y_{twist}\) creates a directly proportional reading at the magnetometer sensor, the bending of the whisker shaft \(y_{bend}\) causes non-linearity. Hence, a non-linear model is required to model the relationship between \(x\) and \(\dot{y}\).
 
-Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is regressed using a third-order polynomial. Fig.~\ref*{fig:polynomial_regression.png} plots the final fitted curve. The root mean squared error is $5.31 mm$ for the training set and $4.36 mm$ for the test set. The max error is 17.4 mm.
+Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is regressed using a third-order polynomial. Fig.~\ref*{fig:polynomial_regression.png} plots the final fitted curve. The root mean squared error is $5.31 mm$ for the training set and $4.36 mm$ for the test set. The max error is $17.4 mm$.
 
 The parameters of the polynomial are saved and used in the \textbf{whisker\_driver\_node} to infer the contact location in real time. The benefit of a polynomial model is that it is very quick to compute. On a resource-constrained robotic application with many whisker sensors, such a low-demand algorithm is desirable.
 
