@@ -50,7 +50,7 @@ Research Council Grant [EP/S023917/1]}}
 
 \begin{abstract}
 Whisker sensors have been an active area of research in recent years for their interesting use cases in robotics and mammal physiology research. Several attempts have been made to develop open-source versions of the sensor to promote wider adoption. However, the existing calibration solutions for these sensors are highly proprietary, cost-prohibitive and error-prone. In this paper, we present a low-cost open-source calibration and testing platform for whisker sensors based on an off-the-shelf 3D printer. We demonstrate its effectiveness by calibrating a whisker sensor for radial contact distance inference. All artefacts of the design are open-sourced and are fully reproducible.
-\keywords{Whisker Sensor \and Calibration \and Open Source}
+\keywords{Whisker Sensor \and Calibration \and Open-Source}
 \end{abstract}
 
 \section{Introduction}
@@ -155,9 +155,9 @@ Using the ROS 2 \textbf{printer\_driver\_node}, the printer head is driven to ma
 
 \subsection{Calibration Data Processing}\label{sec:calibration_data_analysis}
 
-\begin{wrapfigure}{r}{.44\textwidth}
+\begin{wrapfigure}{r}{.46\textwidth}
     \centering
-    \includegraphics[width=0.43\textwidth]{figures/filtered_magnetometer.png}
+    \includegraphics[width=0.45\textwidth]{figures/filtered_magnetometer.png}
     \caption{Raw and Filtered Magnetometer Reading in the Y-Axis }
     \label{fig:filtered_magnetometer}
 \end{wrapfigure}
@@ -175,16 +175,16 @@ To correct this difference, we scale the derivative of the sensor (\(\dot{y}\)) 
 
 \begin{figure}
     \centering
-    \begin{subfigure}[t]{.48\textwidth}
+    \begin{subfigure}[t]{.49\textwidth}
         \centering
-        \includegraphics[width=0.95\columnwidth]{figures/corrected_derivative.png}
+        \includegraphics[width=\columnwidth]{figures/corrected_derivative.png}
         \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the colour corresponds to the distance from the base of the whisker \(x\) where contact is made}
         \label{fig:corrected_derivative.png}
     \end{subfigure}
-    \hspace{3pt}
-    \begin{subfigure}[t]{.48\textwidth}
+    \hspace{1pt}
+    \begin{subfigure}[t]{.49\textwidth}
         \centering
-        \includegraphics[width=0.95\columnwidth]{figures/x_y_relationship.png}
+        \includegraphics[width=\columnwidth]{figures/x_y_relationship.png}
         \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The colour corresponds to the value of N}
         \label{fig:x_y_relationship.png}
     \end{subfigure}
@@ -196,9 +196,9 @@ To correct this difference, we scale the derivative of the sensor (\(\dot{y}\)) 
 
 It can be seen there is a clear correlation between \(\dot{y}\) and the radial distance of the contact location \(x\). Fig. \ref*{fig:x_y_relationship.png} plots the Nth data point in each episode against the contact distance from the base of the whisker \(x\). It can be noted that the relationship is not linear as suggested by Eq.~\ref*{eq:linear_relationship}. This is because the deflection in \(y\) at the contact point of the whisker has 2 components: \(y_{contact} = y_{twist} + y_{bend}\) where \(y_{twist}\) is the displacement due to twisting of the gel material and \(y_{bend}\) is the displacement due to bending of the whisker shaft.
 
-\begin{wrapfigure}{r}{.48\textwidth}
+\begin{wrapfigure}{r}{.5\textwidth}
     \centering
-    \includegraphics[width=.45\textwidth]{figures/polynomial_regression.png}
+    \includegraphics[width=.49\columnwidth]{figures/polynomial_regression.png}
     \caption{Polynomial Regression of the relationship 100th sample of \(\dot{y}\) in each episode and the contact distance \(x\)}
     \label{fig:polynomial_regression.png}
 \end{wrapfigure}
