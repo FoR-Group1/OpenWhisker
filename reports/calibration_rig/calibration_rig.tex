@@ -14,6 +14,7 @@
 \setlength{\belowcaptionskip}{5pt}
 \setlength{\abovecaptionskip}{5pt}
 \usepackage{array}
+\usepackage{tikz}
 \newenvironment{conditions}
   {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
   {\end{tabular}\par\vspace{\belowdisplayskip}}
@@ -49,7 +50,7 @@ Research Council Grant [EP/S023917/1]}}
 \end{center}
 
 \begin{abstract}
-Whisker sensors have been an active area of research in recent years for their interesting use cases in robotics and mammal physiology research. Several attempts have been made to develop open-source versions of the sensor to promote wider adoption. However, the existing calibration solutions for these sensors are highly proprietary, cost-prohibitive and error-prone. In this paper, we present a low-cost open-source calibration and testing platform for whisker sensors based on an off-the-shelf 3D printer. We demonstrate its effectiveness by calibrating a whisker sensor for radial contact distance inference. All artefacts of the design are open-sourced and are fully reproducible.
+Whisker sensors have been an area of active research in recent years for their interesting use cases in tactile robotics and mammal physiology research. Several attempts have been made to develop open-source versions of the sensor to promote wider adoption. However, the existing calibration solutions for these sensors are highly proprietary, cost-prohibitive and error-prone. In this paper, we present a low-cost open-source calibration and testing platform for whisker sensors based on an off-the-shelf 3D printer. We demonstrate its effectiveness by calibrating a whisker sensor for radial contact distance inference. All artefacts of the design are open-sourced and are fully reproducible.
 \keywords{Whisker Sensor \and Calibration \and Open-Source}
 \end{abstract}
 
@@ -57,7 +58,7 @@ Whisker sensors have been an active area of research in recent years for their i
 
 Whisker sensor is a type of tactile sensor that mimics the whiskers of rodents. It has been widely produced to study whiskered mammal physiology \cite{prescottActiveTouchSensing2020}. It has also garnered interest in the field of robotics in recent years as a low-cost and effective tactile sensor. \cite{fotouhiDetectionBarelyVisible2021} shows its use in material defect identification. \cite{struckmeierViTaSLAMBioinspiredVisuoTactile2019} and \cite{foxTactileSLAMBiomimetic2012} used whisker sensors in tactile SLAM tasks.
 
-Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is time-consuming and often involves expensive proprietary hardware. \cite{sullivanTactileDiscriminationUsing2012} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms to make controlled movements to calibrate whisker sensors. \cite{evansWhiskerobjectContactSpeed2010} relied on a Yamaha-PXYX closed-source hardware Cartesian robot and a Yamaha RCX 222 controller, together costing several thousand pounds.
+Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is time-consuming and often involves expensive proprietary hardware. For calibration, \cite{sullivanTactileDiscriminationUsing2012} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms to make the controlled movements required. \cite{evansWhiskerobjectContactSpeed2010} relied on a Yamaha-PXYX closed-source hardware Cartesian robot and a Yamaha RCX 222 controller, together costing several thousand pounds.
 
 The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open-source sensor designs have been made available to researchers and hobbyists \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open-source 3D printer for automated and repeatable calibration.
 
@@ -65,58 +66,60 @@ The cheap, accurate and repeatable calibration of whisker sensors is crucial for
 
 \subsection{Hardware Components}
 
-An overview of the hardware setup can be seen in Fig.~\ref{fig:calibration_rig}. The solution consists of the following components:
+The solution consists of the following hardware components:
 
 \begin{enumerate}
-    \item \textbf{3D Printer} A Prusa i3 (MK2)~\cite{OriginalPrusaI3} was used as the base for the calibration rig.
+    \item \textbf{3D Printer} A Prusa i3 (MK2)~\cite{OriginalPrusaI3} was used as the base for the platform.
 
-    \item \textbf{Whisker Sensor Mount} A 3D printable mount is designed to secure the whisker sensor onto the printer bed. Illustrated in Fig.~\ref{fig:whisker_mount_base}, the base clamps onto the bed using grub screws. An adaptor is designed to hold the specific shape of the whisker sensor in place and allow for easy removal and replacement. The base features through-holes where the adaptor can be secured via zip ties.
+    \item \textbf{Whisker Sensor Mount} A mount is 3D printed to secure the whisker sensor onto the printer bed. The base clamps onto the bed using grub screws. An adaptor is designed to hold the specific shape of the whisker sensor in place and allow for easy removal and replacement. The base features through-holes where the adaptor can be secured via zip ties.
 
-    \item \textbf{Whisker Sensor} The calibration platform is designed to work with different sensor designs via an adaptor. The whisker sensor used in our experimental setup is of a similar design to the one presented in \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}. It consists of a 3d printed whisker shaft with a gel material at the base acting as a hinge. A magnet is attached to the bottom of the shaft and a digital magnetometer is used to sense the displacement of the magnet.
-    
+    \item \textbf{Whisker Sensor} The whisker sensor used in our experimental setup is of a similar design to the one presented in \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}. It consists of a 3d printed whisker shaft with a gel material at the base acting as a hinge. The whisker is $150 mm$ long and is tapered from base to the tip. A magnet is attached to the bottom of the shaft and a digital magnetometer is used to sense the displacement of the magnet. 
+
     \item \textbf{End Effector} Different end effectors can be mounted onto the printer head to make contact with the whisker sensor to carry out various calibration routines. For radial contact distance calibration, a metal ruler is mounted to make point contact with the whisker.
 \end{enumerate}
 
 \begin{figure}
-    \begin{subfigure}{.245\columnwidth}
-        \centering
-        \includegraphics[width=0.95\textwidth]{3d_printer_overview.jpg}
-        \caption{Overview}
-        \label{fig:calibration_rig_overview}
-    \end{subfigure}
-    \begin{subfigure}{.245\columnwidth}
     \centering
-    \includegraphics[width=0.95\textwidth]{whisker_mount_base.png}
-        \caption{}
-        \label{fig:whisker_mount_base}
-    \end{subfigure}
-    \begin{subfigure}{.245\columnwidth}
-        \centering
-        \includegraphics[width=0.95\textwidth]{whisker_mount_adaptor.png}
-        \caption{}
-        \label{fig:whisker_mount_adaptor}
-    \end{subfigure}
-    \begin{subfigure}{.245\columnwidth}
-        \centering
-        \includegraphics[width=0.95\textwidth]{ruler_support.png}
-        \caption{}
-        \label{fig:beam_monunt}
-    \end{subfigure}
-    \caption{Hardware components of the calibration platform. (b) Whisker mount base (c) Whisker sensor adaptor (d) End effector mount}
-    \label{fig:calibration_rig}
+    \begin{tikzpicture}
+        \node [anchor=south west,text width=2cm] (end_effector_mount) at (-1,4) {End Effector Mount};
+        \node [anchor=north west] at (-1,4) {\includegraphics[height=60pt]{ruler_support.png}};
+
+        \node [anchor=west] (ruler) at (-1,1) {Ruler};
+
+        \node [anchor=south west] (sensor_mount) at (5.8,4.8) {Sensor Mount \& Adaptor};
+        \node [anchor=north west] at (5.8,4.8) {\includegraphics[height=63pt]{whisker_mount_base.png}};
+        \node [anchor=north west] at (8.3,4.8) {\includegraphics[height=63pt,trim={2.70pt 0 0 0},clip]{whisker_mount_adaptor.png}};
+
+        \node [anchor=south west] (whisker_sensor) at (5.8,2) {Whisker Sensor};
+        \node [anchor=north west] at (5.8,2) {\includegraphics[height=60pt, trim={0 0 3.3cm 0},clip]{whisker_cross_section.png}};
+
+        \begin{scope}[xshift=1.5cm]
+            \node[anchor=south west, inner sep=0] (image) at (0,0) {\includegraphics[height=140pt]{3d_printer_overview.jpg}};
+            \begin{scope}[x={(image.south east)},y={(image.north west)}]
+                \draw [-latex, ultra thick, red] (end_effector_mount) to[out=0, in=120] (0.33,0.60);
+                \draw [-latex, ultra thick, red] (ruler) to[out=0, in=-120] (0.38,0.45);
+                \draw [-latex, ultra thick, red] (sensor_mount) to[out=180, in=60] (0.6,0.6);
+                \draw [-latex, ultra thick, red] (whisker_sensor) to[out=180, in=-60] (0.52,0.5);
+            \end{scope}
+        \end{scope}
+
+    \end{tikzpicture}
+    \caption{Calibration Platform Overview}
+    \label{fig:overview}
 \end{figure}
+\vspace{-15pt}
 
 \subsection{Software Components}
 
 \subsubsection{Printer Control}
 
-The printer natively supports a GCode~\cite{kramerNISTRS274NGCInterpreter2000} interface via a serial connection to a host computer. A Python API is written to interface with the printer and provide easy access to calibration routines. It provides functions to reset the printer to a known state and drive the printer head through a parameterized list of locations. It also provides functions to retrieve the x, y and z positions of the printer head.
+The printer natively supports a GCode~\cite{kramerNISTRS274NGCInterpreter2000} interface via a serial connection to a host computer. A Python API is written to interface with the printer and provide easy access to calibration routines. It provides functions to reset the printer to a known state and drive the printer head through a parameterized list of locations. The 3D coordinates of the printer head is also exposed via the API.
 
 \subsubsection{Whisker Sensor Interface}
 
-The whisker sensor used in our experiment utilizes a digital magnetometer to sense whisker displacement. The magnetometer is read by a microcontroller and is in turn connected to the host computer via a serial port. The microcontroller prints the x, y and z readings to the serial port in hex format. The magnetometer has 16 bits per channel and is read at 800 Hz.
+The whisker sensor uses a digital magnetometer to sense displacement. The magnetometer is read by a microcontroller and is in turn connected to the host computer via a serial port. The microcontroller prints the x, y and z readings to the serial port in hex format. The magnetometer has 16 bits per channel and is read at 800 Hz.
 
-Different sensors will have different interfaces, hence a ROS 2 abstraction is provided so that the calibration routine can be easily adapted to different sensor implementations.
+Different sensors will have different interfaces, hence a ROS 2 abstraction is provided so that the calibration routine can be easily adapted to different sensor designs.
 
 \subsubsection{ROS integration}
 
@@ -131,22 +134,23 @@ The sensor and the calibration process, including the 3D printer, are integrated
 \begin{wrapfigure}{r}{.45\textwidth}
     \centering
     \includegraphics[width=.4\textwidth]{figures/foxglove_visualisation.png}
-    \caption{Foxglove visualization of whisker sensor system running in ROS 2}
+    \caption{Live visualization of the sensor system via Foxglove}
     \label{fig:foxglove}
 \end{wrapfigure}
 
-The nodes are written to use standard ROS 2 messages and service definitions as much as possible. Interoperability is ensured through careful control of the interface messages. As a result, the project benefits from a wide range of open-source ROS 2 tools for data collection and analysis. The \verb|ros2_bag| utility is used to record data for calibration. \verb|foxglove| is used to visualize the data (Fig. \ref{fig:foxglove}) during development.
+The nodes utilize standard ROS 2 messages and service definitions where possible. Interoperability is ensured through careful control of the interface messages. As a result, the project benefits from a wide range of open-source ROS 2 tools for data collection and analysis. The \verb|ros2_bag| utility is used to record data for calibration. \verb|foxglove| is used to visualize the data (Fig. \ref{fig:foxglove}) during development.
 
 \section{Evaluation}
 
-To demonstrate the effectiveness of the calibration rig, a whisker sensor is calibrated for radial contact distance inference. This is a crucial step in using the sensor for tactile SLAM \cite{pearsonSimultaneousLocalisationMapping2013, leporaNaiveBayesNovelty2010}. In this type of task, an array of whisker sensors is driven by a servo motor to whisk back and forth. When the whisker bumps into an obstacle, the 3D world location of the contact point is registered. Gradually, a map of the environment can be built with many of these contact points as the robot moves around.
+To demonstrate the effectiveness of the calibration platform, a whisker sensor is calibrated for radial contact distance inference. This is a crucial step in using the sensor for tactile SLAM \cite{pearsonSimultaneousLocalisationMapping2013, leporaNaiveBayesNovelty2010}. In this type of task, an array of whisker sensors is actuated to whisk back and forth. When the whisker makes contact with an obstacle, location of the contact point is estimated to build a map of the environment as the robot moves around.
 
-Using the ROS 2 \textbf{printer\_driver\_node}, the printer head is driven to make contact with the whisker shaft at a series of known locations. The contact is made in a swift back-and-forth motion to mimic the whisking action. Data from the sensor as well as the 3D coordinates of the printer head is easily recorded via the ROS 2 \textbf{rosbag} utility. Fig.~\ref{fig:calibration_routine} shows the raw data collected from 3 consecutive calibration runs. It can be seen that the y channel in the sensor readings shows the largest signals. The following analysis focuses on the y channel only, but the same process can be applied to the x and z channels.
+Using the ROS 2 \textbf{printer\_driver\_node}, the printer head is driven to make contact with the whisker shaft at a series of known locations. The contact is made in a swift back-and-forth motion to mimic the whisking action. Data from the sensor as well as the 3D coordinates of the printer head is recorded via the ROS 2 \textbf{rosbag} utility. Fig.~\ref{fig:calibration_routine} shows the raw data collected from 3 consecutive calibration runs. The following analysis focuses on the y channel only as it contains the most significant signals, but the same process can be applied to the x and z channels.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.49\textwidth]{figures/raw_magnetometer.png}
-    \includegraphics[width=0.49\textwidth]{figures/3d_printer_raw.png}
+    \includegraphics[width=0.45\textwidth]{figures/raw_magnetometer.png}
+    \hspace{15pt}
+    \includegraphics[width=0.45\textwidth]{figures/3d_printer_raw.png}
     \caption{Raw Magnetometer (left) and 3D Printer Data (right) from 3 consecutive Calibration Routines}
     \label{fig:calibration_routine}
     \vspace{-10pt}
@@ -175,17 +179,17 @@ To correct this difference, we scale the derivative of the sensor (\(\dot{y}\)) 
 
 \begin{figure}
     \centering
-    \begin{subfigure}[t]{.49\textwidth}
+    \begin{subfigure}[t]{.45\textwidth}
         \centering
         \includegraphics[width=\columnwidth]{figures/corrected_derivative.png}
-        \caption{Corrected \(\dot{y}\) of the Isolated Contact Episodes. Each episode is 1 line and the colour corresponds to the distance from the base of the whisker \(x\) where contact is made}
+        \caption{Time series of \(\dot{y}\) of each Episode. The colour corresponds to the radial contact distance in $mm$.}
         \label{fig:corrected_derivative.png}
     \end{subfigure}
     \hspace{1pt}
-    \begin{subfigure}[t]{.49\textwidth}
+    \begin{subfigure}[t]{.45\textwidth}
         \centering
         \includegraphics[width=\columnwidth]{figures/x_y_relationship.png}
-        \caption{Nth data point of \(\dot{y}\) in each episode against the distance from the base of the whisker \(x\) where contact is made. The colour corresponds to the value of N}
+        \caption{Nth data point of \(\dot{y}\) in each episode against the radial contact distance. The colour corresponds to the value of N}
         \label{fig:x_y_relationship.png}
     \end{subfigure}
     \vspace{-5pt}
@@ -194,20 +198,20 @@ To correct this difference, we scale the derivative of the sensor (\(\dot{y}\)) 
 \end{figure}
 
 
-It can be seen there is a clear correlation between \(\dot{y}\) and the radial distance of the contact location \(x\). Fig. \ref*{fig:x_y_relationship.png} plots the Nth data point in each episode against the contact distance from the base of the whisker \(x\). It can be noted that the relationship is not linear as suggested by Eq.~\ref*{eq:linear_relationship}. This is because the deflection in \(y\) at the contact point of the whisker has 2 components: \(y_{contact} = y_{twist} + y_{bend}\) where \(y_{twist}\) is the displacement due to twisting of the gel material and \(y_{bend}\) is the displacement due to bending of the whisker shaft.
+There is a clear correlation between \(\dot{y}\) and the radial distance of the contact location \(x\). Fig. \ref*{fig:x_y_relationship.png} plots the Nth data point in each episode against the contact distance from the base of the whisker \(x\). Note that the relationship is non-linear as suggested by Eq.~\ref*{eq:linear_relationship}. This is because the deflection in \(y\) at the contact point has 2 components: \(y_{contact} = y_{twist} + y_{bend}\). \(y_{twist}\) is due to twisting of the gel material and \(y_{bend}\) is driven by bending of the whisker shaft.
+
+While \(y_{twist}\) creates a directly proportional reading at the magnetometer sensor, the bending of the whisker shaft \(y_{bend}\) causes non-linearity. Hence, a non-linear model is required to model the relationship between \(x\) and \(\dot{y}\).
 
 \begin{wrapfigure}{r}{.5\textwidth}
     \centering
     \includegraphics[width=.49\columnwidth]{figures/polynomial_regression.png}
-    \caption{Polynomial Regression of the relationship 100th sample of \(\dot{y}\) in each episode and the contact distance \(x\)}
+    \caption{Polynomial Regression of the relationship between 120th sample of \(\dot{y}\) in each episode and the radial contact distance \(x\)}
     \label{fig:polynomial_regression.png}
 \end{wrapfigure}
 
-While \(y_{twist}\) creates a directly proportional reading at the magnetometer sensor, the bending of the whisker shaft \(y_{bend}\) causes non-linearity. Hence, a non-linear model is required to model the relationship between \(x\) and \(\dot{y}\).
+Picking the 120th sample in each episode, the relationship between \(x\) and \(\dot{y}\) is regressed using a third-order polynomial (Fig.~\ref*{fig:polynomial_regression.png}). The root mean squared error is $5.31 mm$ for the training set and $4.36 mm$ for the test set.  The largest error ($17.4 mm$) occurs towards the base of the whisker where the deflection is dominated by $y_{twist}$ and the correlation is weak. If a contact is made within $70 mm$ from the tip, the contact location can be accurately inferred to within $2 mm$ by the model.
 
-Picking the 120th sample in each episode, this relationship between \(x\) and \(\dot{y}\) is regressed using a third-order polynomial. Fig.~\ref*{fig:polynomial_regression.png} plots the final fitted curve. The root mean squared error is $5.31 mm$ for the training set and $4.36 mm$ for the test set. The max error is $17.4 mm$.
-
-The parameters of the polynomial are saved and used in the \textbf{whisker\_driver\_node} to infer the contact location in real time. The benefit of a polynomial model is that it is very quick to compute. On a resource-constrained robotic application with many whisker sensors, such a low-demand algorithm is desirable.
+The parameters of the polynomial are saved and used in \textbf{whisker driver node} to infer the contact location in real time. A polynomial model benefits from low compute resource requirement and is particularly suited for resource-constrained robotic applications with many whisker sensors.
 
 \section{Conclusion}
 
