@@ -62,7 +62,7 @@ Whisker sensor is a type of tactile sensor that mimics the whiskers of rodents. 
 
 Existing research initiatives endeavour to build the whisker sensor and testing platform from scratch. This is time-consuming and often involves expensive proprietary hardware. For calibration, \cite{sullivanTactileDiscriminationUsing2012} and \cite{fotouhiDetectionBarelyVisible2021} used industrial robot arms to make the controlled movements required. \cite{evansWhiskerobjectContactSpeed2010} relied on a Yamaha-PXYX closed-source hardware Cartesian robot and a Yamaha RCX 222 controller, together costing several thousand pounds.
 
-The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open-source sensor designs have been made available to researchers and hobbyists \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open-source 3D printer for automated and repeatable calibration.
+The cheap, accurate and repeatable calibration of whisker sensors is crucial for its wider adoption. While open-source sensor designs have been made available to researchers and hobbyists \cite{stevenson2024whisker}, no attempt has been made to provide a solution for sensor calibration. Our project sets out to fill this gap by developing a low-effort open-source whisker calibration and testing platform. We demonstrate the use of an off-the-shelf open-source 3D printer for automated and repeatable calibration.
 
 \section{Solution Overview}
 
@@ -75,7 +75,7 @@ The solution consists of the following hardware components:
 
     \item \textbf{Whisker Sensor Mount} A mount is 3D printed to secure the whisker sensor onto the printer bed. The base clamps onto the bed using grub screws. An adaptor is designed to hold the specific shape of the whisker sensor in place and allow for easy removal and replacement. The base features through-holes where the adaptor can be secured via zip ties.
 
-    \item \textbf{Whisker Sensor} The whisker sensor used in our experimental setup is of a similar design to the one presented in \cite{Paparas_Ratatouille-Whiskers_Ratatouille-Whisker_Ratatouille_Whisker_2024}. It consists of a 3d printed whisker shaft with a gel material at the base acting as a hinge. The whisker is $150 mm$ long and is tapered from base to the tip. A magnet is attached to the bottom of the shaft and a digital magnetometer is used to sense the displacement of the magnet. 
+    \item \textbf{Whisker Sensor} The whisker sensor used in our experimental setup is of a similar design to the one presented in \cite{stevenson2024whisker}. It consists of a 3d printed whisker shaft with a gel material at the base acting as a hinge. The whisker is $150 mm$ long and is tapered from base to the tip. A magnet is attached to the bottom of the shaft and a digital magnetometer is used to sense the displacement of the magnet. 
 
     \item \textbf{End Effector} Different end effectors can be mounted onto the printer head to make contact with the whisker sensor to carry out various calibration routines. For radial contact distance calibration, a metal ruler is mounted to make point contact with the whisker.
 \end{enumerate}
