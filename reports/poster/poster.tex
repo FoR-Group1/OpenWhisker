@@ -1,0 +1,145 @@
+\documentclass[final]{beamer}
+
+\usepackage{blindtext}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{capt-of}
+\usepackage{wrapfig}
+% \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[orientation=portrait,size=a0,scale=1.2]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{gemini}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{anyfontsize}
+\usepackage[style=ieee,backend=biber,natbib=true]{biblatex}
+\AtBeginBibliography{\small}
+\graphicspath{ {./figures/} }
+
+\addbibresource{Whiskers.bib}
+
+\footercontent{* This work was partly supported by the EPSRC grant [EP/S023917/1]. \hfill
+  \href{mailto:liyou.zhou@outlook.com}{liyou.zhou@outlook.com}}
+
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.025\paperwidth}
+\setlength{\colwidth}{0.46\paperwidth}
+
+\title{3D Printer Based Open Source Calibration Platform for Whisker Sensors}
+\author{
+    Liyou Zhou \and
+    Omar Ali \and
+    Soumo Emmanuel Arnaud \and\linebreak
+    Eden Attenborough \and
+    Jacob Swindell \and
+    George Davies \and
+    Charles Fox
+}
+\date{\today}
+\institute[shortinst]{Department of Computer Science, University of Lincoln}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+\begin{document}
+
+\begin{frame}[t]
+\begin{columns}[t]
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Introduction}
+    \begin{itemize}
+      \item Whisker sensors are a type of tactile sensor increasingly used in robotics. \cite{fotouhiDetectionBarelyVisible2021,struckmeierViTaSLAMBioinspiredVisuoTactile2019,foxTactileSLAMBiomimetic2012}
+      \item Calibration of sensors remains a cost prohibitive and time-consuming process. \cite{sullivanTactileDiscriminationUsing2012,fotouhiDetectionBarelyVisible2021,evansWhiskerobjectContactSpeed2010}
+      \item We present a low-cost open-source calibration and testing platform for whisker sensors based on an off-the-shelf 3D printer
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Hardware Components}
+    \begin{enumerate}
+        \item \textbf{3D Printer} A Prusa i3 (MK2)~\cite{OriginalPrusaI3}.
+        \item \textbf{Whisker Sensor Mount} secures the whisker onto the printer bed.
+        \item \textbf{Whisker Sensor} is of a similar design to \cite{stevenson2024whisker}.
+        \item \textbf{End Effector} a metal ruler.
+    \end{enumerate}
+  
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.95\linewidth]{overview}
+      \caption{Calibration Platform Overview}
+      \label{fig:overview}
+    \end{figure}
+  \end{block}
+
+  \begin{block}{Software Components}
+    \begin{enumerate}
+      \item \textbf{Printer Driver} Interface with 3D printer via GCode~\cite{kramerNISTRS274NGCInterpreter2000}.
+      \item \textbf{Sensor Driver} Read whisker sensor via serial at 800 Hz.
+      \item \textbf{ROS integration} Publishes sensor data to ROS topics and controls the printer via a service interface. Uses foxglove for visualization and rosbag for data acquisition.
+    \end{enumerate}
+
+    \begin{figure}
+      \centering
+      \includegraphics[width=.7\textwidth]{foxglove_visualisation.png}
+      \caption{Live visualization of the sensor system via Foxglove}
+      \label{fig:foxglove}
+    \end{figure}
+  \end{block}
+
+  \begin{block}{Open Source}
+    All project artefacts are available at \url{https://github.com/FoR-Group1/OpenWhisker}. Would you like to know more? Do you have something we can collaborate on? Scan the QR code below.
+    \begin{figure}
+      \centering
+      \includegraphics[width=.3\columnwidth]{qr_code.png}
+      \label{fig:github}
+    \end{figure}
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Calibration Results}
+    Printer head is driven to make contact with the whisker sensor at a series of radial distances. Sensor data is recorded along with 3D location of the printer head.
+
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.49\textwidth]{raw_magnetometer.png}
+      \hspace{1pt}
+      \includegraphics[width=0.49\textwidth]{3d_printer_raw.png}
+      \caption{Raw Magnetometer (left) and 3D Printer Data (right) from 3 consecutive Calibration Routines}
+      \label{fig:calibration_routine}
+    \end{figure}
+
+    Taking the second derivative of the sensor data, a correlation can be regressed using a polynomial model.
+  
+    \begin{figure}
+      \centering
+      \includegraphics[width=.7\columnwidth]{polynomial_regression.png}
+      \caption{Polynomial Regression of the relationship between 120th sample of \(\dot{y}\) in each episode and the radial contact distance \(x\)}
+      \label{fig:polynomial_regression.png}
+    \end{figure}
+
+    If a contact is made within $70 mm$ from the tip of the whisker, the contact location can be accurately inferred to within $2 mm$ by the model.
+  \end{block}
+
+  \begin{block}{References}
+    \vspace{-.4cm}
+    \printbibliography[heading=none]
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\end{columns}
+\end{frame}
+
+\end{document}
