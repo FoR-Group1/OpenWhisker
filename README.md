@@ -2,7 +2,10 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11081338.svg)](https://zenodo.org/doi/10.5281/zenodo.11081338)
 
-[![Watch the video](https://https://github.com/FoR-Group1/OpenWhisker/calibration_platform/docs/figures/video_thumbnail.jpg)](https://www.youtube.com/watch?v=EIAvARFTPrY)
+<a href="https://www.youtube.com/watch?v=EIAvARFTPrY">
+    <img src="./calibration_platform/docs/figures/video_thumbnail.png" alt="MSc Research Showcase: 3D Printer Based Open Source Calibration Platform for Whisker Sensors">
+</a>
+
 
 <img src=calibration_platform/docs/figures/3d_printer_overview.jpg  width="250">
 
